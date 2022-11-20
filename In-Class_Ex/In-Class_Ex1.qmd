@@ -180,4 +180,4 @@ k1dists <- unlist(nbdists(k1, coords, longlat = TRUE))
 summary(k1dists)
 ```
 
-***\-\-- to be continue \-\--***
+***\-\-- to be continued \-\--***
