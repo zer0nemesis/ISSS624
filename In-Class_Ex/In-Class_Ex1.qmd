@@ -180,4 +180,58 @@ k1dists <- unlist(nbdists(k1, coords, longlat = TRUE))
 summary(k1dists)
 ```
 
+### Computing fixed distance weight matrix
+
+Computing distance weight matrix using dnearneigh()
+
+```{r}
+wm_d62 <- dnearneigh(coords, 0, 62, longlat = TRUE)
+wm_d62
+```
+
+*Average number of links means that on average, each region point area is nearest in distance to another 3.68 point areas*
+
+Displaying the content of wm_d62 weight matrix
+
+```{r}
+str(wm_d62)
+```
+
+Another way to display the structure of the weight matrix is to combine table() and card()
+
+```{r}
+table(hunan$County, card(wm_d62))
+```
+
+```{r}
+n_comp <- n.comp.nb(wm_d62)
+n_comp$nc
+```
+
+```{r}
+table(n_comp$comp.id)
+```
+
+#### Plotting fixed distance weight matrix
+
+Plotting distance weight matrix
+
+The red lines show the links of 1st nearest neighbours and black lines show links of neighbours within the cut-off distance of 62km
+
+```{r}
+plot(hunan$geometry, border="lightgrey")
+plot(wm_d62, coords, add=TRUE)
+plot(k1, coords, add=TRUE, col="red", length=0.08)
+```
+
+Alternatively, we can plot both of them next to each other
+
+```{r}
+par(mfrow=c(1,2))
+plot(hunan$geometry, border="lightgrey")
+plot(k1, coords, add=TRUE, col="red", length=0.08, main="1st nearest neighbours")
+plot(hunan$geometry, border="lightgrey")
+plot(wm_d62, coords, add=TRUE, pch = 19, cex = 0.6, main="Distance link")
+```
+
 ***\-\-- to be continued \-\--***
