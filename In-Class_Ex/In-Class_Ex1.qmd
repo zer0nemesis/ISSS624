@@ -96,3 +96,88 @@ Displaying the complete weight matrix using str()
 ```{r}
 str(wm_q)
 ```
+
+### Creating (ROOK) contiguity based neighbours
+
+Computing Rook contiguity weight matrix
+
+```{r}
+wm_r <- poly2nb(hunan, queen=FALSE)
+summary(wm_r)
+```
+
+### Visualising contiguity weights
+
+To get longitude values, map st_centroid function over the geometry column of us.bound and access the longitude value through double bracket notation \[\[\]\]and 1.
+
+```{r}
+longitude <- map_dbl(hunan$geometry, ~st_centroid(.x)[[1]])
+```
+
+Doing the same for latitude, BUT accessing the second value per each centroid with \[\[2\]\]
+
+```{r}
+latitude <- map_dbl(hunan$geometry, ~st_centroid(.x)[[2]])
+```
+
+Putting longitude and latitude together with cbind
+
+```{r}
+coords <- cbind(longitude, latitude)
+```
+
+Checking the first few observations for correct formatting
+
+```{r}
+head(coords)
+```
+
+#### Plotting Queen contiguity based neighbours map
+
+```{r}
+plot(hunan$geometry, border="lightgrey")
+plot(wm_q, coords, pch = 19, cex = 0.6, add = TRUE, col= "red")
+```
+
+#### Plotting Rook contiguity based neighbours map
+
+```{r}
+plot(hunan$geometry, border="lightgrey")
+plot(wm_r, coords, pch = 19, cex = 0.6, add = TRUE, col = "red")
+```
+
+#### Plotting both Queen and Rook contiguity based neighbours map
+
+```{r}
+par(mfrow=c(1,2))
+plot(hunan$geometry, border="lightgrey")
+plot(wm_q, coords, pch = 19, cex = 0.6, add = TRUE, col= "red", main="Queen Contiguity")
+plot(hunan$geometry, border="lightgrey")
+plot(wm_r, coords, pch = 19, cex = 0.6, add = TRUE, col = "red", main="Rook Contiguity")
+```
+
+## Computing distance based neighbours
+
+Identifying neighbours of region points by Euclidean distance with a distance band with lower d1= and upper d2= bounds controlled by the bounds= argument.
+
+### Determine the cut off distance
+
+Determining the upper limit for distance band by:
+
+-   Returning a matrix with the indices of points belonging to the set of the k nearest neighbours of each other using knearneigh()
+
+-   Converting the knn object into a neighbours list of class nd with a list of integer vectors containing neighbour region ids by using knn2nb()
+
+-   Returning the length of neighbour relationship edges by using nbdists()
+
+-   Removing the list structure of returned objects by using unlist()
+
+```{r}
+#coords <- coordinates(hunan)
+
+k1 <- knn2nb(knearneigh(coords))
+k1dists <- unlist(nbdists(k1, coords, longlat = TRUE))
+summary(k1dists)
+```
+
+***\-\-- to be continue \-\--***
