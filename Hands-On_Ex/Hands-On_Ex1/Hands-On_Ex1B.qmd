@@ -11,7 +11,7 @@ Choropleth Mapping with R
 ## Getting Started
 
 ```{r}
-pacman::p_load(sf, tmap, tidyverse)
+pacman::p_load(sf, tmap, tidyverse, dplyr)
 ```
 
 ## Importing Data into R
@@ -46,20 +46,23 @@ popdata <- read_csv("data/aspatial/respopagesextod2011to2020.csv")
 Using pivot_wider(), mutate(), filter(), group_by(), and select()
 
 ```{r}
+library(dplyr)
 popdata2020 <- popdata %>%
   filter(Time == 2020) %>%
   group_by(PA, SZ, AG) %>%
-  summarise('POP' = sum('POP')) %>%
+  summarise(POP = sum(Pop)) %>%
   ungroup() %>%
   pivot_wider(names_from = AG,
               values_from = POP) %>%
-  mutate(YOUNG = rowSums(.[3:6])+rowSums(.[12])) %>%
-  mutate('ECONOMY ACTIVE' = rowSums(.[7:11])+rowSums(.[13:15])) %>%
-  mutate('AGED' = rowSums(.[16:21])) %>%
-  mutate('Total' = rowSums(.[3:21])) %>%
-  mutate('DEPENDENCY' = ('YOUNG' + 'AGED')/ 'ECONOMY ACTIVE') %>%
-  select('PA', 'SZ', 'YOUNG', 'ECONOMY ACTIVE', 'AGED', 'TOTAL', 'DEPENDENCY')
+mutate('YOUNG' = rowSums(.[3:6])+rowSums(.[12])) %>%
+mutate('ECONOMY ACTIVE' = rowSums(.[7:11])+rowSums(.[13:15])) %>%
+mutate('AGED' = rowSums(.[16:21])) %>%
+mutate('TOTAL' = rowSums(.[3:21])) %>%
+#mutate('DEPENDENCY' = ('YOUNG' + 'AGED')/ 'ECONOMY ACTIVE') %>%
+  select(PA, SZ, 'YOUNG', 'ECONOMY ACTIVE', 'AGED', 'TOTAL')
 ```
+
+*Problem computing DEPENDENCY, caused by error in "YOUNG" + "AGED": non-numeric argument to binary operator*
 
 #### Joining attribute data and geospatial data
 
@@ -90,12 +93,14 @@ Easiest and quickest way to draw choropleth map, it is concise and provides a go
 ```{r}
 tmap_mode("plot")
 qtm(mpsz_pop2020, 
-    fill = "DEPENDENCY")
+    fill = "ECONOMY ACTIVE")
 ```
 
-## Plotting the Geospatial Data
+*Change from DEPENDENCY to ECONOMY ACTIVE*
 
-Visualising geospatial features using plot(). Default plot of an sf object is a multi-plot of all attributes
+## Creating a choropleth map by using tmap's elements
+
+Disadvantages of
 
 ```{r}
 
