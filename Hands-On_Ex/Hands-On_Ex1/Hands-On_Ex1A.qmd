@@ -215,7 +215,7 @@ mpsz3414$Area <- mpsz3414 %>%
 Computing the density using mutate()
 
 ```{r}
-mpsz3414$'PreSch Density' <- mpsz3414$'PreSch Count'/ mpsz3414$Area * 1000000
+'PreSch Density' <- mpsz3414$'PreSch Count'/ mpsz3414$Area * 1000000
 ```
 
 ## Exploratory Data Analysis
@@ -230,7 +230,7 @@ Using ggplot2
 
 ```{r}
 ggplot(data = mpsz3414, 
-       aes(x= as.numeric('PreSch Density')))+ 
+       aes(x= as.numeric(mpsz3414$'PreSch Density')))+ 
   geom_histogram(bins = 20,
                  color="black",
                  fill="light blue") +
@@ -243,7 +243,7 @@ ggplot(data = mpsz3414,
 Plotting a scatterplot to show the relationship between Pre-School density and Pre-School Count using ggplot2
 
 ```{r}
-ggplot(mpsz3414, aes(x = 'PreSch Density', y = 'PreSch Count')) + geom_point()
+ggplot(mpsz3414, aes(x = as.numeric(mpsz3414$'PreSch Density'), y = as.numeric(mpsz3414$'PreSch Count'))) + geom_point()
 ```
 
 \

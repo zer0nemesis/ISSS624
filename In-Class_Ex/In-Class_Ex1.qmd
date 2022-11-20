@@ -1,0 +1,98 @@
+---
+title: "In-Class_Ex1"
+author: "Roger"
+editor: visual
+---
+
+# Overview
+
+Computing spatial weights using R
+
+```{r}
+packages = c('sf', 'spdep', 'tmap', 'tidyverse')
+for (p in packages){
+  if(!require(p, character.only = T)){
+    install.packages(p)
+  }
+  library(p,character.only = T)
+}
+```
+
+## Importing the data
+
+Importing shapefile as simple features object of sf
+
+```{r}
+hunan <- st_read(dsn = "data/geospatial", 
+                 layer = "Hunan")
+```
+
+Importing csv file as R dataframe class
+
+```{r}
+hunan2012 <- read_csv("data/aspatial/Hunan_2012.csv")
+```
+
+Performing relational join
+
+```{r}
+hunan <- left_join(hunan,hunan2012)
+```
+
+## Visualising regional development indicator
+
+Preparing basemap and choropleth map showing the distribution of GDPPC2012 by using qtm()
+
+```{r}
+basemap <- tm_shape(hunan) +
+  tm_polygons() +
+  tm_text("NAME_3", size=0.5)
+
+gdppc <- qtm(hunan, "GDPPC")
+tmap_arrange(basemap, gdppc, asp=1, ncol=2)
+```
+
+## Computing contiguity spatial weights
+
+Building a neighbours list based on regions with contiguous boundaries
+
+### Computing(QUEEN) contiguity based neighbours
+
+Computing Queen contiguity weight matrix
+
+```{r}
+wm_q <- poly2nb(hunan, queen=TRUE)
+summary(wm_q)
+```
+
+Seeing the neighbours for the first polygon in the object
+
+```{r}
+wm_q[[1]]
+```
+
+Retrieving country name of polygonID=1
+
+```{r}
+hunan$County[1]
+```
+
+Revealing county names of five neighbouring polygons
+
+```{r}
+hunan$NAME_3[c(2,3,4,57,85)]
+```
+
+Retrieving the GDPPC of these five counties
+
+```{r}
+nb1 <- wm_q[[1]]
+nb1 <- hunan$GDPPC[nb1]
+nb1
+```
+
+Displaying the complete weight matrix using str()
+
+```{r}
+str(wm_q)
+```
