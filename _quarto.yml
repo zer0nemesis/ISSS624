@@ -14,13 +14,13 @@ website:
 
     - text: In Class Exercises
       menu:
-      - text: In Class Exercise 1
-        href: In-Class_Ex/In-Class_Ex1.qmd
+        - text: In Class Exercise 1
+          href: In-Class_Ex/In-Class_Ex1.qmd
 
     - text: Take Home Exercises
       menu:
-      - text: Take Home Exercise1
-        href: Take-Home_Ex/Take-Home_Ex1.qmd
+        - text: Take Home Exercise1
+          href: Take-Home_Ex/Take-Home_Ex1.qmd
         
     right:
       - href: index.qmd
