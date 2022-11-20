@@ -199,12 +199,12 @@ summary(mpsz_pop2020$`ECONOMY ACTIVE`)
 ```
 
 \
-Setting break points at 3K, 4K, 5K, 6K, min and max at 0 and 100K
+Setting break points at 3K, 4K, 5K, 6K, min and max at 0 and 10K
 
 ```{r}
 tm_shape(mpsz_pop2020)+
   tm_fill("ECONOMY ACTIVE",
-          breaks = c(0, 3000, 4000, 5000, 6000, 100000))+
+          breaks = c(0, 3000, 4000, 5000, 6000, 10000))+
   tm_borders(alpha = 0.5)
 ```
 

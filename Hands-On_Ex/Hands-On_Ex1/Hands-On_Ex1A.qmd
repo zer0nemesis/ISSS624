@@ -243,5 +243,9 @@ ggplot(data = mpsz3414,
 Plotting a scatterplot to show the relationship between Pre-School density and Pre-School Count using ggplot2
 
 ```{r}
-
+ggplot(mpsz3414, aes(x = 'PreSch Density', y = 'PreSch Count')) + geom_point()
 ```
+
+\
+
+\
