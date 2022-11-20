@@ -9,9 +9,8 @@ website:
       menu:
         - text: Hands On Exercise 1A
           href: Hands-On_Ex/Hands-On_Ex1/Hands-On_Ex1A.qmd
-#      menu:    
-#        - text: Hands On Exercise 1B
-#          href: Hands-On_Ex/Hands-On_Ex1/Hands-On_Ex1B.qmd
+        - text: Hands On Exercise 1B
+          href: Hands-On_Ex/Hands-On_Ex1/Hands-On_Ex1B.qmd
     
     right:
       - href: index.qmd
