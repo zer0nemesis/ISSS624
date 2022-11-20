@@ -203,7 +203,7 @@ Setting break points at 0.6, 0.7, 0.8, 0.9, min and max at 0 and 1
 
 ```{r}
 tm_shape(mpsz_pop2020)+
-  tm_fill("ECONOMY ACTIVE",
+  tm_fill("DEPENDENCY",
           breaks = c(0, 0.6, 0.7, 0.8, 0.9, 1))+
   tm_borders(alpha = 0.5)
 ```
