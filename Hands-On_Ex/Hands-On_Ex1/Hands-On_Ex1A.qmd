@@ -1,0 +1,248 @@
+---
+title: "Hands On Ex1A"
+author: "Roger Chen"
+editor: visual
+---
+
+# Overview
+
+Geospatial Data Wrangling with R
+
+## Getting Started
+
+```{r}
+packages = c('sf', 'tidyverse')
+for (p in packages){
+  if(!require(p, character.only = T)){
+    install.packages(p)
+  }
+  library(p,character.only = T)
+}
+```
+
+## Importing Geospatial Data
+
+### Importing polygon feature data in shapefile format
+
+Importing shapefile into R as a polygon feature data frame using st_read()
+
+```{r}
+mpsz = st_read(dsn = "data/geospatial",
+               layer = "MP14_SUBZONE_WEB_PL")
+```
+
+### Importing Polyline feature data in shapefile form
+
+Importing shapefile into R as line feature data frame using st_read()
+
+```{r}
+cyclingpath = st_read(dsn = "data/geospatial",
+                      layer = "CyclingPath")
+```
+
+### Importing GIS data in kml format
+
+Importing kml into R, remember that the complete path and kml extension need to be provided
+
+```{r}
+preschool = st_read("data/geospatial/pre-schools-location-kml.kml")
+```
+
+## Checking Contents of a Simple Feature Data Frame
+
+### Working with st_geometry()
+
+Retrieving geometry list-column using st_geometry()
+
+```{r}
+st_geometry(mpsz)
+```
+
+### Working with glimpse()
+
+Learning more about the associated attribute information in the data frame using glimpse()
+
+```{r}
+glimpse(mpsz)
+```
+
+### Working with head()
+
+Revealing complete information of a feature object using head()
+
+```{r}
+head(mpsz, n = 5)
+```
+
+## Plotting the Geospatial Data
+
+Visualising geospatial features using plot(). Default plot of an sf object is a multi-plot of all attributes
+
+```{r}
+plot(mpsz)
+```
+
+Choosing to plot only the geometry
+
+```{r}
+plot(st_geometry(mpsz))
+```
+
+Plotting the sf object by using a specific attribute
+
+```{r}
+plot(mpsz["PLN_AREA_N"])
+```
+
+## Working with Projection
+
+### Assigning EPSG Code to a simple feature data frame
+
+Example of the coordinate system of mpsz simple feature data frame by using st_crs()
+
+```{r}
+st_crs(mpsz)
+```
+
+In order to assign the correct ESPG code from "9001" to "3414" for mpsz data frame, use st_transform()
+
+```{r}
+mpsz3414 <- st_transform(mpsz, 3414)
+```
+
+Checking the CRS again
+
+```{r}
+st_crs(mpsz3414)
+```
+
+### Transforming the projection of preschool from wgs84 to svy21
+
+Transforming the original data from "geographical coordinate system" to "projected coordinate system"
+
+Projection transformation
+
+```{r}
+preschool3414 <- st_transform(preschool, crs = 3414)
+```
+
+## Importing and Converting an Aspatial Data
+
+### Importing aspatial data
+
+Importing the csv file format using read_csv()
+
+```{r}
+listings <- read_csv("data/aspatial/listings.csv")
+```
+
+Using list() of Base R instead of glimpse()
+
+```{r}
+list(listings)
+```
+
+### Creating a simple feature data frame from an aspatial data frame
+
+Converting listing data frame into a simple feature data frame
+
+```{r}
+listings_sf <- st_as_sf(listings,
+                        coords = c("longitude", "latitude"),
+                        crs = 4326) %>%
+  st_transform(crs = 3414)
+```
+
+\
+Examining the content of the newly created simple feature data frame
+
+```{r}
+glimpse(listings_sf)
+```
+
+## Geoprocessing with sf package
+
+### Buffering
+
+Computing a five-meter buffers around cycling paths
+
+```{r}
+buffer_cycling <- st_buffer(cyclingpath,
+                            dist = 5, nQuadSegs = 30)
+```
+
+Calculating the area of the buffers
+
+```{r}
+buffer_cycling$AREA <- st_area(buffer_cycling)
+```
+
+Deriving total land involved using sum() of Base R
+
+```{r}
+sum(buffer_cycling$AREA)
+```
+
+### Point-in-polygon count
+
+Performing two operations at one go: (1) identifying pre-schools located inside each Planning Subzone using st_intersect(); (2) calculating number of pre-schools that fall inside each planning subzone using length()
+
+*\*Warning: **Not** to be confused with st_intersection()*
+
+```{r}
+mpsz3414$'PreSch Count' <- lengths(st_intersects(mpsz3414, preschool3414))
+```
+
+Checking the summary statistics
+
+```{r}
+summary(mpsz3414$'PreSch Count')
+```
+
+Listing the planning subzone with the most number of preschool using top_n()
+
+```{r}
+top_n(mpsz3414, 1, 'PreSch Count')
+```
+
+Calculating the density of pre-school by planning subzone
+
+```{r}
+mpsz3414$Area <- mpsz3414 %>%
+  st_area()
+```
+
+Computing the density using mutate()
+
+```{r}
+#mpsz3414 <- mpsz3414 %>%
+#  mutate('PreSch Density' = 'PreSch Count'/ Area * 1000000)
+```
+
+## Exploratory Data Analysis
+
+Plotting a histogram to reveal distribution of PreSch Density using hist() of R Graphics
+
+```{r}
+#hist(mpsz3414$'PreSch Density')
+```
+
+Using ggplot2
+
+```{r}
+#ggplot(data = mpsz3414, 
+#       aes(x= as.numeric('PreSch Density')))+ 
+#  geom_histogram(bins = 20,
+#                 color="black",
+#                 fill="light blue") +
+#  labs(title = "Are pre-school evenly distributed in SG?",
+#       subtitle = "There are many planning sub-zones with a single pre-school, on the other hand, \nthere are two planning sub-zones with at least 20 pre-schools",
+#       x = "Pre-school density (per sq km)",
+#       y = "Frequency")
+```
+
+Plotting a scatterplot to show the relationship between Pre-School density and Pre-School Count using ggplot2
+
+```{r}
+
+```
