@@ -11,7 +11,7 @@ Geospatial Data Wrangling with R
 ## Getting Started
 
 ```{r}
-packages = c('sf', 'tidyverse')
+packages = c('sf', 'tidyverse', 'dplyr')
 for (p in packages){
   if(!require(p, character.only = T)){
     install.packages(p)
@@ -190,19 +190,19 @@ Performing two operations at one go: (1) identifying pre-schools located inside 
 *\*Warning: **Not** to be confused with st_intersection()*
 
 ```{r}
-mpsz3414$'PreSch Count' <- lengths(st_intersects(mpsz3414, preschool3414))
+mpsz3414$`PreSch Count` <- lengths(st_intersects(mpsz3414, preschool3414))
 ```
 
 Checking the summary statistics
 
 ```{r}
-summary(mpsz3414$'PreSch Count')
+summary(mpsz3414$`PreSch Count`)
 ```
 
 Listing the planning subzone with the most number of preschool using top_n()
 
 ```{r}
-top_n(mpsz3414, 1, 'PreSch Count')
+top_n(mpsz3414, 1, `PreSch Count`)
 ```
 
 Calculating the density of pre-school by planning subzone
@@ -215,7 +215,9 @@ mpsz3414$Area <- mpsz3414 %>%
 Computing the density using mutate()
 
 ```{r}
-'PreSch Density' <- mpsz3414$'PreSch Count'/ mpsz3414$Area * 1000000
+mpsz3414 <- mpsz3414 %>%
+  mutate(`PreSch Density` = `PreSch Count`/Area * 1000000)
+
 ```
 
 ## Exploratory Data Analysis
@@ -223,14 +225,14 @@ Computing the density using mutate()
 Plotting a histogram to reveal distribution of PreSch Density using hist() of R Graphics
 
 ```{r}
-hist(mpsz3414$'PreSch Density')
+hist(mpsz3414$`PreSch Density`)
 ```
 
 Using ggplot2
 
 ```{r}
 ggplot(data = mpsz3414, 
-       aes(x= as.numeric(mpsz3414$'PreSch Density')))+ 
+       aes(x= as.numeric(`PreSch Density`)))+ 
   geom_histogram(bins = 20,
                  color="black",
                  fill="light blue") +
@@ -243,7 +245,7 @@ ggplot(data = mpsz3414,
 Plotting a scatterplot to show the relationship between Pre-School density and Pre-School Count using ggplot2
 
 ```{r}
-ggplot(mpsz3414, aes(x = as.numeric(mpsz3414$'PreSch Density'), y = as.numeric(mpsz3414$'PreSch Count'))) + geom_point()
+ggplot(mpsz3414, aes(x = as.numeric(`PreSch Density`), y = as.numeric(`PreSch Count`))) + geom_point()
 ```
 
 \

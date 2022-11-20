@@ -158,6 +158,28 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   </li>  
     </ul>
   </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-in-class-exercises" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">In class Exercises</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-in-class-exercises">    
+        <li>
+    <a class="dropdown-item" href="../../In-Class_Ex/In-Class_Ex1.html">
+ <span class="dropdown-text">In Class Exercise 1</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-take-home-exercises" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Take Home Exercises</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-take-home-exercises">    
+        <li>
+    <a class="dropdown-item" href="../../Take-Home_Ex/Take-Home_Ex1.html">
+ <span class="dropdown-text">Take Home Exercise1</span></a>
+  </li>  
+    </ul>
+  </li>
 </ul>
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
   <li class="nav-item">
@@ -251,7 +273,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <section id="getting-started" class="level2">
 <h2 class="anchored" data-anchor-id="getting-started">Getting Started</h2>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>packages <span class="ot">=</span> <span class="fu">c</span>(<span class="st">'sf'</span>, <span class="st">'tidyverse'</span>)</span>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>packages <span class="ot">=</span> <span class="fu">c</span>(<span class="st">'sf'</span>, <span class="st">'tidyverse'</span>, <span class="st">'dplyr'</span>)</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (p <span class="cf">in</span> packages){</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span>(<span class="sc">!</span><span class="fu">require</span>(p, <span class="at">character.only =</span> T)){</span>
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">install.packages</span>(p)</span>
@@ -671,11 +693,11 @@ $ geometry                       &lt;POINT [m]&gt; POINT (22646.02 35167.9), POI
 <p>Performing two operations at one go: (1) identifying pre-schools located inside each Planning Subzone using st_intersect(); (2) calculating number of pre-schools that fall inside each planning subzone using length()</p>
 <p><em>*Warning: <strong>Not</strong> to be confused with st_intersection()</em></p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>mpsz3414<span class="sc">$</span><span class="st">'PreSch Count'</span> <span class="ot">&lt;-</span> <span class="fu">lengths</span>(<span class="fu">st_intersects</span>(mpsz3414, preschool3414))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>mpsz3414<span class="sc">$</span><span class="st">`</span><span class="at">PreSch Count</span><span class="st">`</span> <span class="ot">&lt;-</span> <span class="fu">lengths</span>(<span class="fu">st_intersects</span>(mpsz3414, preschool3414))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Checking the summary statistics</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(mpsz3414<span class="sc">$</span><span class="st">'PreSch Count'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(mpsz3414<span class="sc">$</span><span class="st">`</span><span class="at">PreSch Count</span><span class="st">`</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
   0.000   0.000   2.000   4.207   6.000  37.000 </code></pre>
@@ -683,47 +705,19 @@ $ geometry                       &lt;POINT [m]&gt; POINT (22646.02 35167.9), POI
 </div>
 <p>Listing the planning subzone with the most number of preschool using top_n()</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb47"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a><span class="fu">top_n</span>(mpsz3414, <span class="dv">1</span>, <span class="st">'PreSch Count'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb47"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a><span class="fu">top_n</span>(mpsz3414, <span class="dv">1</span>, <span class="st">`</span><span class="at">PreSch Count</span><span class="st">`</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>Simple feature collection with 323 features and 16 fields
+<pre><code>Simple feature collection with 1 feature and 16 fields
 Geometry type: MULTIPOLYGON
 Dimension:     XY
-Bounding box:  xmin: 2667.538 ymin: 15748.72 xmax: 56396.44 ymax: 50256.33
+Bounding box:  xmin: 23449.05 ymin: 46001.23 xmax: 25594.22 ymax: 47996.47
 Projected CRS: SVY21 / Singapore TM
-First 10 features:
-   OBJECTID SUBZONE_NO       SUBZONE_N SUBZONE_C CA_IND      PLN_AREA_N
-1         1          1    MARINA SOUTH    MSSZ01      Y    MARINA SOUTH
-2         2          1    PEARL'S HILL    OTSZ01      Y          OUTRAM
-3         3          3       BOAT QUAY    SRSZ03      Y SINGAPORE RIVER
-4         4          8  HENDERSON HILL    BMSZ08      N     BUKIT MERAH
-5         5          3         REDHILL    BMSZ03      N     BUKIT MERAH
-6         6          7  ALEXANDRA HILL    BMSZ07      N     BUKIT MERAH
-7         7          9   BUKIT HO SWEE    BMSZ09      N     BUKIT MERAH
-8         8          2     CLARKE QUAY    SRSZ02      Y SINGAPORE RIVER
-9         9         13 PASIR PANJANG 1    QTSZ13      N      QUEENSTOWN
-10       10          7       QUEENSWAY    QTSZ07      N      QUEENSTOWN
-   PLN_AREA_C       REGION_N REGION_C          INC_CRC FMEL_UPD_D   X_ADDR
-1          MS CENTRAL REGION       CR 5ED7EB253F99252E 2014-12-05 31595.84
-2          OT CENTRAL REGION       CR 8C7149B9EB32EEFC 2014-12-05 28679.06
-3          SR CENTRAL REGION       CR C35FEFF02B13E0E5 2014-12-05 29654.96
-4          BM CENTRAL REGION       CR 3775D82C5DDBEFBD 2014-12-05 26782.83
-5          BM CENTRAL REGION       CR 85D9ABEF0A40678F 2014-12-05 26201.96
-6          BM CENTRAL REGION       CR 9D286521EF5E3B59 2014-12-05 25358.82
-7          BM CENTRAL REGION       CR 7839A8577144EFE2 2014-12-05 27680.06
-8          SR CENTRAL REGION       CR 48661DC0FBA09F7A 2014-12-05 29253.21
-9          QT CENTRAL REGION       CR 1F721290C421BFAB 2014-12-05 22077.34
-10         QT CENTRAL REGION       CR 3580D2AFFBEE914C 2014-12-05 24168.31
-     Y_ADDR SHAPE_Leng SHAPE_Area                       geometry PreSch Count
-1  29220.19   5267.381  1630379.3 MULTIPOLYGON (((31495.56 30...            0
-2  29782.05   3506.107   559816.2 MULTIPOLYGON (((29092.28 30...            5
-3  29974.66   1740.926   160807.5 MULTIPOLYGON (((29932.33 29...            0
-4  29933.77   3313.625   595428.9 MULTIPOLYGON (((27131.28 30...            2
-5  30005.70   2825.594   387429.4 MULTIPOLYGON (((26451.03 30...            1
-6  29991.38   4428.913  1030378.8 MULTIPOLYGON (((25899.7 297...           10
-7  30230.86   3275.312   551732.0 MULTIPOLYGON (((27746.95 30...            4
-8  30222.86   2208.619   290184.7 MULTIPOLYGON (((29351.26 29...            4
-9  29893.78   6571.323  1084792.3 MULTIPOLYGON (((20996.49 30...            3
-10 30104.18   3454.239   631644.3 MULTIPOLYGON (((24472.11 29...            1</code></pre>
+  OBJECTID SUBZONE_NO      SUBZONE_N SUBZONE_C CA_IND PLN_AREA_N PLN_AREA_C
+1      290          3 WOODLANDS EAST    WDSZ03      N  WOODLANDS         WD
+      REGION_N REGION_C          INC_CRC FMEL_UPD_D   X_ADDR   Y_ADDR
+1 NORTH REGION       NR C90769E43EE6B0F2 2014-12-05 24506.64 46991.63
+  SHAPE_Leng SHAPE_Area                       geometry PreSch Count
+1   6603.608    2553464 MULTIPOLYGON (((24786.75 46...           37</code></pre>
 </div>
 </div>
 <p>Calculating the density of pre-school by planning subzone</p>
@@ -733,7 +727,8 @@ First 10 features:
 </div>
 <p>Computing the density using mutate()</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb50"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>mpsz3414<span class="sc">$</span><span class="st">'PreSch Density'</span> <span class="ot">&lt;-</span> mpsz3414<span class="sc">$</span><span class="st">'PreSch Count'</span><span class="sc">/</span> mpsz3414<span class="sc">$</span>Area <span class="sc">*</span> <span class="dv">1000000</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb50"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>mpsz3414 <span class="ot">&lt;-</span> mpsz3414 <span class="sc">%&gt;%</span></span>
+<span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="st">`</span><span class="at">PreSch Density</span><span class="st">`</span> <span class="ot">=</span> <span class="st">`</span><span class="at">PreSch Count</span><span class="st">`</span><span class="sc">/</span>Area <span class="sc">*</span> <span class="dv">1000000</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 </section>
@@ -741,7 +736,7 @@ First 10 features:
 <h2 class="anchored" data-anchor-id="exploratory-data-analysis">Exploratory Data Analysis</h2>
 <p>Plotting a histogram to reveal distribution of PreSch Density using hist() of R Graphics</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb51"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a><span class="fu">hist</span>(mpsz3414<span class="sc">$</span><span class="st">'PreSch Density'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb51"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a><span class="fu">hist</span>(mpsz3414<span class="sc">$</span><span class="st">`</span><span class="at">PreSch Density</span><span class="st">`</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <p><img src="Hands-On_Ex1A_files/figure-html/unnamed-chunk-27-1.png" class="img-fluid" width="672"></p>
 </div>
@@ -749,7 +744,7 @@ First 10 features:
 <p>Using ggplot2</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb52"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">data =</span> mpsz3414, </span>
-<span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a>       <span class="fu">aes</span>(<span class="at">x=</span> <span class="fu">as.numeric</span>(<span class="st">'PreSch Density'</span>)))<span class="sc">+</span> </span>
+<span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a>       <span class="fu">aes</span>(<span class="at">x=</span> <span class="fu">as.numeric</span>(<span class="st">`</span><span class="at">PreSch Density</span><span class="st">`</span>)))<span class="sc">+</span> </span>
 <span id="cb52-3"><a href="#cb52-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>(<span class="at">bins =</span> <span class="dv">20</span>,</span>
 <span id="cb52-4"><a href="#cb52-4" aria-hidden="true" tabindex="-1"></a>                 <span class="at">color=</span><span class="st">"black"</span>,</span>
 <span id="cb52-5"><a href="#cb52-5" aria-hidden="true" tabindex="-1"></a>                 <span class="at">fill=</span><span class="st">"light blue"</span>) <span class="sc">+</span></span>
@@ -757,21 +752,13 @@ First 10 features:
 <span id="cb52-7"><a href="#cb52-7" aria-hidden="true" tabindex="-1"></a>       <span class="at">subtitle =</span> <span class="st">"There are many planning sub-zones with a single pre-school, on the other hand, </span><span class="sc">\n</span><span class="st">there are two planning sub-zones with at least 20 pre-schools"</span>,</span>
 <span id="cb52-8"><a href="#cb52-8" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"Pre-school density (per sq km)"</span>,</span>
 <span id="cb52-9"><a href="#cb52-9" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"Frequency"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning in FUN(X[[i]], ...): NAs introduced by coercion
-
-Warning in FUN(X[[i]], ...): NAs introduced by coercion</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning: Removed 323 rows containing non-finite values (`stat_bin()`).</code></pre>
-</div>
 <div class="cell-output-display">
 <p><img src="Hands-On_Ex1A_files/figure-html/unnamed-chunk-28-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
 <p>Plotting a scatterplot to show the relationship between Pre-School density and Pre-School Count using ggplot2</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb55"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(mpsz3414, <span class="fu">aes</span>(<span class="at">x =</span> <span class="st">'PreSch Density'</span>, <span class="at">y =</span> <span class="st">'PreSch Count'</span>)) <span class="sc">+</span> <span class="fu">geom_point</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb53"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(mpsz3414, <span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">as.numeric</span>(<span class="st">`</span><span class="at">PreSch Density</span><span class="st">`</span>), <span class="at">y =</span> <span class="fu">as.numeric</span>(<span class="st">`</span><span class="at">PreSch Count</span><span class="st">`</span>))) <span class="sc">+</span> <span class="fu">geom_point</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <p><img src="Hands-On_Ex1A_files/figure-html/unnamed-chunk-29-1.png" class="img-fluid" width="672"></p>
 </div>
