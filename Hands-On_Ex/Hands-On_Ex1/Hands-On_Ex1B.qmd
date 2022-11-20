@@ -96,12 +96,7 @@ Easiest and quickest way to draw choropleth map, it is concise and provides a go
 ```{r}
 tmap_mode("plot")
 qtm(mpsz_pop2020, 
-    fill = "ECONOMY ACTIVE")
-
-
-#tmap_mode("plot")
-#qtm(mpsz_pop2020, 
-#    fill = "DEPENDENCY")
+    fill = "DEPENDENCY")
 ```
 
 *Error when fill = "DEPENDENCY": Fill argument neither colors nor valid variable name(s)*
@@ -114,11 +109,11 @@ Disadvantages of qtm() is that it makes aesthetics of individual layers difficul
 
 ```{r}
 tm_shape(mpsz_pop2020)+
-  tm_fill("ECONOMY ACTIVE",
+  tm_fill("DEPENDENCY",
           style = "quantile",
           palette = "Blues",
-          title = "Economy Active Ratio") +
-    tm_layout(main.title = "Distribution of Economy Active Ratio by planning subzone",
+          title = "Dependency Ratio") +
+    tm_layout(main.title = "Distribution of Dependency Ratio by planning subzone",
               main.title.position = "center",
               main.title.size = 1.2,
               legend.height = 0.45,
@@ -149,14 +144,14 @@ Showing the geographical distribution of a selected variable by planning subzone
 
 ```{r}
 tm_shape(mpsz_pop2020)+
-  tm_polygons("ECONOMY ACTIVE")
+  tm_polygons("DEPENDENCY")
 ```
 
 #### Drawing a choropleth map using tm_fill() and tm_border()
 
 ```{r}
 tm_shape(mpsz_pop2020)+
-  tm_fill("ECONOMY ACTIVE")
+  tm_fill("DEPENDENCY")
 ```
 
 Adding boundaries of the planning subzones
@@ -165,7 +160,7 @@ Adding boundaries of the planning subzones
 
 ```{r}
 tm_shape(mpsz_pop2020)+
-  tm_fill("ECONOMY ACTIVE")+
+  tm_fill("DEPENDENCY")+
   tm_borders(lwd = 0.1, alpha = 1)
 ```
 
@@ -179,7 +174,7 @@ Quantile data classification using 5 classes
 
 ```{r}
 tm_shape(mpsz_pop2020)+
-  tm_fill("ECONOMY ACTIVE",
+  tm_fill("DEPENDENCY",
           n = 5,
           style = "jenks")+
   tm_borders(alpha = 0.5)
@@ -189,7 +184,7 @@ Using equal data classification method
 
 ```{r}
 tm_shape(mpsz_pop2020)+
-  tm_fill("ECONOMY ACTIVE",
+  tm_fill("DEPENDENCY",
           n=5,
           style = "equal")+
   tm_borders(alpha = 0.5)
@@ -197,19 +192,19 @@ tm_shape(mpsz_pop2020)+
 
 ### Plotting choropleth map with custom breaks
 
-Displaying descriptive statistics of ECONOMY ACTIVE field
+Displaying descriptive statistics of DEPENDENCY field
 
 ```{r}
-summary(mpsz_pop2020$`ECONOMY ACTIVE`)
+summary(mpsz_pop2020$`DEPENDENCY`)
 ```
 
 \
-Setting break points at 3K, 4K, 5K, 6K, min and max at 0 and 10K
+Setting break points at 0.6, 0.7, 0.8, 0.9, min and max at 0 and 1
 
 ```{r}
 tm_shape(mpsz_pop2020)+
   tm_fill("ECONOMY ACTIVE",
-          breaks = c(0, 3000, 4000, 5000, 6000, 10000))+
+          breaks = c(0, 0.6, 0.7, 0.8, 0.9, 1))+
   tm_borders(alpha = 0.5)
 ```
 
@@ -217,7 +212,7 @@ tm_shape(mpsz_pop2020)+
 
 ```{r}
 tm_shape(mpsz_pop2020)+
-  tm_fill("ECONOMY ACTIVE",
+  tm_fill("DEPENDENCY",
           n = 6,
           style = "quantile",
           palette = "Blues") +
@@ -228,7 +223,7 @@ Reversing the colour shading with "-" prefix
 
 ```{r}
 tm_shape(mpsz_pop2020)+
-  tm_fill("ECONOMY ACTIVE",
+  tm_fill("DEPENDENCY",
           style = "quantile",
           palette = "-Greens") +
   tm_borders(alpha = 0.5)
@@ -242,13 +237,13 @@ Combining all map elements into a cohesive map, which includes objects, title, s
 
 ```{r}
 tm_shape(mpsz_pop2020)+
-  tm_fill("ECONOMY ACTIVE", 
+  tm_fill("DEPENDENCY", 
           style = "jenks", 
           palette = "Blues", 
           legend.hist = TRUE, 
           legend.is.portrait = TRUE,
           legend.hist.z = 0.1) +
-  tm_layout(main.title = "Distribution of Economy Active Ratio by planning subzone \n(Jenks classification)",
+  tm_layout(main.title = "Distribution of Dependency Ratio by planning subzone \n(Jenks classification)",
             main.title.position = "center",
             main.title.size = 1,
             legend.height = 0.45, 
@@ -263,7 +258,7 @@ tm_shape(mpsz_pop2020)+
 
 ```{r}
 tm_shape(mpsz_pop2020)+
-  tm_fill("ECONOMY ACTIVE", 
+  tm_fill("DEPENDENCY", 
           style = "quantile", 
           palette = "-Greens") +
   tm_borders(alpha = 0.5) +
@@ -274,11 +269,11 @@ tm_shape(mpsz_pop2020)+
 
 ```{r}
 tm_shape(mpsz_pop2020)+
-  tm_fill("ECONOMY ACTIVE", 
+  tm_fill("DEPENDENCY", 
           style = "quantile", 
           palette = "Blues",
           title = "No. of persons") +
-  tm_layout(main.title = "Distribution of Economy Active Ratio \nby planning subzone",
+  tm_layout(main.title = "Distribution of Dependency Ratio \nby planning subzone",
             main.title.position = "center",
             main.title.size = 1.2,
             legend.height = 0.45, 
@@ -328,7 +323,7 @@ assigning multiple values to at least one of the aesthetic arguments
 
 ```{r}
 tm_shape(mpsz_pop2020)+ 
-  tm_polygons(c("ECONOMY ACTIVE","AGED"),
+  tm_polygons(c("DEPENDENCY","AGED"),
           style = c("equal", "quantile"), 
           palette = list("Blues","Greens")) +
   tm_layout(legend.position = c("right", "bottom"))
@@ -338,7 +333,7 @@ tm_shape(mpsz_pop2020)+
 
 ```{r}
 tm_shape(mpsz_pop2020) +
-  tm_fill("ECONOMY ACTIVE",
+  tm_fill("DEPENDENCY",
           style = "quantile",
           palette = "Blues",
           thres.poly = 0) + 
@@ -371,7 +366,7 @@ tmap_arrange(youngmap, agedmap, asp=1, ncol=2)
 
 ```{r}
 tm_shape(mpsz_pop2020[mpsz_pop2020$REGION_N=="CENTRAL REGION", ])+
-  tm_fill("ECONOMY ACTIVE", 
+  tm_fill("DEPENDENCY", 
           style = "quantile", 
           palette = "Blues", 
           legend.hist = TRUE, 
