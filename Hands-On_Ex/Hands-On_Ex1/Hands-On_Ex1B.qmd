@@ -39,7 +39,7 @@ Importing csv file into RStudio and saving the file into a R dataframe called po
 popdata <- read_csv("data/aspatial/respopagesextod2011to2020.csv")
 ```
 
-## Data Preparation
+### Data Preparation
 
 #### Data Wrangling
 
@@ -82,6 +82,11 @@ mpsz_pop2020 <- left_join(mpsz, popdata2020,
                           by = c("SUBZONE_N" = "SZ"))
 ```
 
+```{r}
+
+write_rds(mpsz_pop2020, "data/rds/mpszpop2020.rds")
+```
+
 ## Chropleth Mapping Geospatial Data Using tmap
 
 Two approaches to prepare thematic map: (a) quick thematic map using qtm(); (b) highly customisable thematic map using tmap elements
@@ -100,70 +105,89 @@ qtm(mpsz_pop2020,
 
 ## Creating a choropleth map by using tmap's elements
 
-Disadvantages of
+Disadvantages of qtm() is that it makes aesthetics of individual layers difficult to control. To draw a high quality cartographic choropleth map using tmap's drawing elements
 
 ```{r}
-
+tm_shape(mpsz_pop2020)+
+  tm_fill("ECONOMY ACTIVE",
+          style = "quantile",
+          palette = "Blues",
+          title = "Economy Active Ratio") +
+    tm_layout(main.title = "Distribution of Economy Active Ratio by planning subzone",
+              main.title.position = "center",
+              main.title.size = 1.2,
+              legend.height = 0.45,
+              legend.width = 0.35,
+              frame = TRUE)+
+  tm_borders(alpha = 0.5)+
+  tm_compass(type = "8star", size = 2)+
+  tm_scale_bar()+
+  tm_grid(alpha = 0.2)+
+  tm_credits("SourceSource: Planning Sub-zone boundary from Urban Redevelopment Authorithy (URA)\n and Population data from Department of Statistics DOS",
+             position = c("left", "bottom"))
 ```
 
-Choosing to plot only the geometry
+#### Drawing a base map
+
+Drawing the planning subzone polygons using tm_polygons() and tm_shape() to define input data
 
 ```{r}
-
+tm_shape(mpsz_pop2020)+
+  tm_polygons()
 ```
 
-Plotting the sf object by using a specific attribute
+#### Drawing a choropleth map using *tm_polygons()*
+
+Showing the geographical distribution of a selected variable by planning subzone, by assigning target variable to *tm_polygons()*.
+
+*by default, missing values are shaded in grey*
 
 ```{r}
-
+tm_shape(mpsz_pop2020)+
+  tm_polygons("ECONOMY ACTIVE")
 ```
 
-## Working with Projection
-
-### Assigning EPSG Code to a simple feature data frame
-
-Example of the coordinate system of mpsz simple feature data frame by using st_crs()
+#### Drawing a choropleth map using tm_fill() and tm_border()
 
 ```{r}
-
+tm_shape(mpsz_pop2020)+
+  tm_fill("ECONOMY ACTIVE")
 ```
 
-In order to assign the correct ESPG code from "9001" to "3414" for mpsz data frame, use st_transform()
+Adding boundaries of the planning subzones
+
+*alpha argument is used to define transparency number (0 being totally transparent and 1 being opaque). Three other arguments for tm_border() are (a) col = border colour, (b) lwd = border line width, (c) lty = border line type.*
 
 ```{r}
-
+tm_shape(mpsz_pop2020)+
+  tm_fill("ECONOMY ACTIVE")+
+  tm_borders(lwd = 0.1, alpha = 1)
 ```
 
-Checking the CRS again
+### Data classification methods of tmap
+
+**tmap** provides a 10 data classification methods: (1) *fixed*, (2) *sd*, (3) *equal*, (4) *pretty* (default), (5) *quantile*, (6) *kmeans*, (7) *hclust*, (8) *bclust*, (9) *fisher*, and (10) *jenks*.
+
+#### Plotting choropleth maps with built in classification methods
+
+Quantile data classification using 5 classes
 
 ```{r}
-
+tm_shape(mpsz_pop2020)+
+  tm_fill("ECONOMY ACTIVE",
+          n = 5,
+          style = "jenks")+
+  tm_borders(alpha = 0.5)
 ```
 
-### Transforming the projection of preschool from wgs84 to svy21
-
-Transforming the original data from "geographical coordinate system" to "projected coordinate system"
-
-Projection transformation
+Using equal data classification method
 
 ```{r}
-
-```
-
-## Importing and Converting an Aspatial Data
-
-### Importing aspatial data
-
-Importing the csv file format using read_csv()
-
-```{r}
-
-```
-
-Using list() of Base R instead of glimpse()
-
-```{r}
-
+tm_shape(mpsz_pop2020)+
+  tm_fill("ECONOMY ACTIVE",
+          n=5,
+          style = "equal")+
+  tm_borders(alpha = 0.5)
 ```
 
 ### Creating a simple feature data frame from an aspatial data frame
