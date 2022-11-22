@@ -11,3 +11,4 @@ Starting from:
 1.  Geospatial Data Wrangling with R
 2.  Chropleth Mapping with R
 3.  Spatial Weights and Applications
+4.  Global and Local Measures of Spatial Autocorrelation
