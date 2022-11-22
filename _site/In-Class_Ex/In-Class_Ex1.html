@@ -150,22 +150,19 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
     <ul class="dropdown-menu" aria-labelledby="nav-menu-hands-on-exercises">    
         <li>
     <a class="dropdown-item" href="../Hands-On_Ex/Hands-On_Ex1/Hands-On_Ex1A.html">
- <span class="dropdown-text">Hands On Exercise 1A</span></a>
+ <span class="dropdown-text">Geospatial Data Wrangling with R [1]</span></a>
   </li>  
         <li>
     <a class="dropdown-item" href="../Hands-On_Ex/Hands-On_Ex1/Hands-On_Ex1B.html">
- <span class="dropdown-text">Hands On Exercise 1B</span></a>
+ <span class="dropdown-text">Choropleth Mapping with R [2]</span></a>
   </li>  
-    </ul>
-  </li>
-  <li class="nav-item dropdown ">
-    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-in-class-exercises" role="button" data-bs-toggle="dropdown" aria-expanded="false">
- <span class="menu-text">In Class Exercises</span>
-    </a>
-    <ul class="dropdown-menu" aria-labelledby="nav-menu-in-class-exercises">    
         <li>
     <a class="dropdown-item" href="../In-Class_Ex/In-Class_Ex1.html">
- <span class="dropdown-text">In Class Exercise 1</span></a>
+ <span class="dropdown-text">Spatial Weights and Applications [3]</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../Hands-On_Ex/Hands-On_Ex2/Hands-On_Ex2.html">
+ <span class="dropdown-text">Global and Local Measures of Spatial Autocorrelation [4]</span></a>
   </li>  
     </ul>
   </li>
@@ -1296,7 +1293,7 @@ Non-symmetric neighbours list</code></pre>
 <section id="row-standardised-spatial-weights-matrix" class="level3">
 <h3 class="anchored" data-anchor-id="row-standardised-spatial-weights-matrix">Row standardised spatial weights matrix</h3>
 <p>Assigning weights to each neighbouring polygon (e.g.&nbsp;each neighbouring polygon will be assigned equal weight (style = “W”), by assigning fraction 1/(no. of neighbours), then summing the weighted income values</p>
-<p>Drawback in that polygons along the edges of the study area will base their lagged values on fewer polygons thus potentially over- or under- estimating the true nature of the spatial auto-correlation (other mobre robust options are available, e.g.&nbsp;style = “B”)</p>
+<p>Drawback in that polygons along the edges of the study area will base their lagged values on fewer polygons thus potentially over- or under- estimating the true nature of the spatial auto-correlation (other more robust options are available, e.g.&nbsp;style = “B”)</p>
 <p><em>zero.policy=TRUE option allows for list of non-neighbours</em></p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb61"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb61-1"><a href="#cb61-1" aria-hidden="true" tabindex="-1"></a>rswm_q <span class="ot">&lt;-</span> <span class="fu">nb2listw</span>(wm_q, <span class="at">style =</span> <span class="st">"W"</span>, <span class="at">zero.policy =</span> <span class="cn">TRUE</span>)</span>

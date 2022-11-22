@@ -276,7 +276,7 @@ ids
 
 Assigning weights to each neighbouring polygon (e.g. each neighbouring polygon will be assigned equal weight (style = "W"), by assigning fraction 1/(no. of neighbours), then summing the weighted income values
 
-Drawback in that polygons along the edges of the study area will base their lagged values on fewer polygons thus potentially over- or under- estimating the true nature of the spatial auto-correlation (other mobre robust options are available, e.g. style = "B")
+Drawback in that polygons along the edges of the study area will base their lagged values on fewer polygons thus potentially over- or under- estimating the true nature of the spatial auto-correlation (other more robust options are available, e.g. style = "B")
 
 *zero.policy=TRUE option allows for list of non-neighbours*
 

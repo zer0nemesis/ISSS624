@@ -39,4 +39,107 @@ Performing relational join
 hunan <- left_join(hunan, hunan2012)
 ```
 
+Visualising regional development indicator
+
+Preparing a basemap and choropleth map showing the distribution of GDPPC 2012 by using qtm()
+
+```{r}
+equal <- tm_shape(hunan)+
+  tm_fill("GDPPC",
+          n=5,
+          style="equal")+
+  tm_borders(alpha=0.5)+
+  tm_layout(main.title = "Equal interval classification")
+
+quantile <- tm_shape(hunan)+
+  tm_fill("GDPPC",
+          n=5,
+          style = "quantile")+
+  tm_borders(alpha=0.5)+
+  tm_layout(main.title = "Equal quantile classification")
+
+tmap_arrange(equal, 
+             quantile,
+             asp=1,
+             ncol=2)
+```
+
+## Global spatial autocorrelation
+
+Computing global spatial autocorrelation statistics [**and**]{.underline} performing spatial complete randomness test for global spatial autocorrelation
+
+### Computing contiguity spatial weights
+
+First, construct spatial weights of the study area, which will be used to define the neighbourhood relationships between geographical units (aka counties) in the study area
+
+Computing Queen contiguity weight matrix
+
+*the summary report shows there are 88 area units in Hunan, most connected area unit has 11 neighbours, while two area units only have 1 neighbour*
+
+```{r}
+wm_q <- poly2nb(hunan,
+                queen = TRUE)
+summary(wm_q)
+```
+
+### Row-standardised weights matrix
+
+Assigning weights to each neighbouring polygon (e.g. each neighbouring polygon will be assigned equal weight (style = "W"), by assigning fraction 1/(no. of neighbours), then summing the weighted income values
+
+Drawback in that polygons along the edges of the study area will base their lagged values on fewer polygons thus potentially over- or under- estimating the true nature of the spatial auto-correlation (other more robust options are available, e.g. style = "B")
+
+*zero.policy=TRUE option allows for list of non-neighbours*
+
+```{r}
+rswm_q <- nb2listw(wm_q,
+                   style="W",
+                   zero.policy = TRUE)
+rswm_q
+```
+
+Input of nb2listw() must be an object of class nb. The syntax has two major arguments, namely style and zero.policy:
+
+-   Style: can take the following values:
+
+    -   "W" - row standardised (sums over all links to n)
+
+    -   "B" - basic binary coding
+
+    -   "C" - globally standardised (sums over all links to n)
+
+    -   "U" - equal to C divided by number of neighbours (sums over all links to unity)
+
+    -   "minmax" - divides the weights by the minimum of the maximum row sums and maximum column sums of the input weights (similar to "C" and "U" styles)
+
+    -   "S" - variance-stabilizing coding scheme
+
+-   zero.policy: if set to TRUE, weights vectors of zero length are inserted for regions without neighbour in the neighbours list, which in turn generate lag values of zero.
+
+### Global spatial autocorrelation: Moran's I
+
+Perfoming Moran's I statistical testing using moran.test()
+
+```{r}
+moran.test(hunan$GDPPC,
+           listw = rswm_q,
+           zero.policy = TRUE,
+           na.action = na.omit)
+```
+
+#### Computing Monte Carlo Moran's I
+
+Performs permutation test for Moran's I statistic using moran.mc() *(1,000 simulations will be performed)*
+
+```{r}
+set.seed(1234)
+bperm = moran.mc(hunan$GDPPC,
+                 listw = rswm_q,
+                 nsim = 999,
+                 zero.policy = TRUE,
+                 na.action = na.omit)
+bperm
+```
+
+#### Visualising Monte Carlo Moran's I
+
 ***\-\-- to be continued - - -***
