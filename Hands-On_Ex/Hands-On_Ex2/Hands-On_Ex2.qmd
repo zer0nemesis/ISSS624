@@ -4,4 +4,39 @@ author: "Roger"
 editor: visual
 ---
 
+# Overview
+
+Learning how to compute Global and Local Measure of Spatial Autocorrelation (GLSA).
+
+In spatial policy, one of the main development objective of the local government and planners is to ensure equal development in the province. The task is to apply appropriate spatial stastistical methods to discover if the development are evenly distributed geographically.
+
+-   if the answer is No, then next question is whether there are signs of spatial clustering
+
+    -   If the answer is Yes, then the follow on question is where are these clusters
+
+## Getting Started
+
+Setting the analytical tools
+
+```{r}
+pacman::p_load(sf, spdep, tmap, tidyverse)
+```
+
+Importing the data into the r environment
+
+```{r}
+hunan <- st_read(dsn = "data/geospatial",
+                 layer = "Hunan")
+```
+
+```{r}
+hunan2012 <- read_csv("data/aspatial/Hunan_2012.csv")
+```
+
+Performing relational join
+
+```{r}
+hunan <- left_join(hunan, hunan2012)
+```
+
 ***\-\-- to be continued - - -***
