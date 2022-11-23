@@ -142,4 +142,164 @@ bperm
 
 #### Visualising Monte Carlo Moran's I
 
+Examining simulated Moran's I test statistics in greater detail, by plotting the distribution of the statistical values as a histogram
+
+```{r}
+mean(bperm$res[1:999])
+```
+
+```{r}
+var(bperm$res[1:999])
+```
+
+```{r}
+summary(bperm$res[1:999])
+```
+
+```{r}
+hist(bperm$res,
+     freq = TRUE,
+     breaks=20,
+     xlab = "Simulated Moran's I")
+abline(v=0,
+       col="red")
+```
+
+### Global spatial autocorrelation: Geary's
+
+Performing Geary's c statistics
+
+#### Geary's c test
+
+Perfoming Geary's C test for spatial autocorrelation using geary.test()
+
+```{r}
+geary.test(hunan$GDPPC, listw=rswm_q)
+```
+
+#### Computing Monte Carlo Geary's C
+
+Performing permutation test for Geary's C statistics using geary.mc()
+
+```{r}
+set.seed(1234)
+bperm=geary.mc(hunan$GDPPC,
+               listw=rswm_q,
+               nsim=999)
+bperm
+```
+
+#### Visualising Monte Carlo Geary's C
+
+```{r}
+mean(bperm$res[1:999])
+```
+
+```{r}
+var(bperm$res[1:999])
+```
+
+```{r}
+summary(bperm$res[1:999])
+```
+
+```{r}
+hist(bperm$res, freq=TRUE, breaks=20, xlab="Simulated Geary C")
+abline(v=1, col="red")
+```
+
+## Spatial Correlogram
+
+Examining patterns of spatial autocorrelation or model residuals. They show how correlated are pairs of spatial observations when distance(lag) is increased between them. They are plots of some index of autocorrelation against distance.
+
+### Compute Moran's I correlogram
+
+Computing a 6-lag spatial correlogram. The global spatial autocorrelation used in Moran's I, then plot the output using plot()
+
+```{r}
+MI_corr <- sp.correlogram(wm_q,
+                          hunan$GDPPC,
+                          order=6,
+                          method="I",
+                          style="W")
+plot(MI_corr)
+```
+
+Note: not all autocorrelation are statistically significant. Hence it is important to examine the full analysis
+
+```{r}
+print(MI_corr)
+```
+
+### Compute Geary's C correlogram and plot
+
+Computing a 6-lag spatial correlogram, using sp.correlogram(). The global spatial autocorrelation used in Geary's C and plotting its output using plot()
+
+```{r}
+GC_corr <- sp.correlogram(wm_q,
+                          hunan$GDPPC,
+                          order=6,
+                          method="C",
+                          style="W")
+plot(GC_corr)
+```
+
+Similarly, printing the analysis report
+
+```{r}
+print(GC_corr)
+```
+
+## Cluster and outlier analysis
+
+Local indicators of spatial association(aka LISA) are statistics that evaluate the existence of clusters in the spatial arrangement of a given variable. For instance, if the study is on cancer rates among census tracts in a given city local clusters in the rates, means there are areas that have higher r lower rates is to be expected by chance alone
+
+### Computing local Moran's I
+
+Computing local Moran's I using localmoran(). It computes li values, given a set of zi alues and a listw object providing neighbour weighting information for the polygon associated with the zi values
+
+```{r}
+fips <- order(hunan$County)
+localMI <- localmoran(hunan$GDPPC, rswm_q)
+head(localMI)
+```
+
+localmoran() returns a matrix of values whose columns are:
+
+-   li : local Moran's I statistics
+
+-   E.li : expectation of local moran statistics under randomisation hypothesis
+
+-   Var.li : variance of local moran statistics under randomisation hypothesis
+
+-   Z.li : standard deviation of local moran statistics
+
+-   Pr() : p-values of local moran statistics
+
+```{r}
+printCoefmat(data.frame(localMI[fips], row.names=hunan$County[fips]), check.names=FALSE)
+```
+
+#### Mapping the local Moran's I
+
+First, append the local Moran's I dataframe onto hunan SpatialPolygonDataFrame
+
+```{r}
+hunan.localMI <- cbind(hunan, localMI) %>%
+  rename(Pr.Ii = Pr.z....E.Ii..)
+```
+
+#### Mapping local Moran's I values
+
+Plotting local Moran's I vlaues using choropleth mapping functions
+
+```{r}
+tm_shape(hunan.localMI)+
+  tm_fill(col = "Ii",
+          style = "pretty",
+          palette = "RdBu",
+          title = "local moran statistics")+
+  tm_borders(alpha=0.5)
+```
+
 ***\-\-- to be continued - - -***
