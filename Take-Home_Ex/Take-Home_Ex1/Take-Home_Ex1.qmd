@@ -189,6 +189,10 @@ Next, write_rds() of readr package is used to save the extracted sf data table i
 write_rds(nga_wp, "data/nga_wp.rds")
 ```
 
+## 1.2.3 Visualising the spatial distribution of water points
+
+In the code chunk below, qtm() of tmap package is used to plot the thematic maps depicting Nigeria waterpoints quickly, while tmap_arrange() is used to create multiple stand-alone maps .
+
 ```{r}
 nga_wp <- read_rds("data/nga_wp.rds")
 total <- qtm(nga_wp, "total wpt")
