@@ -627,7 +627,7 @@ quadrant[DV <0 & LM_I<0] <- 3
 quadrant[DV >0 & LM_I>0] <- 4 
 ```
 
-Last;y, we place the non-significant Moran in the category "0".
+Lastly, we place the non-significant Moran in the category "0".
 
 ```{r}
 quadrant[localMI[,5]>signif] <- 0
@@ -680,4 +680,79 @@ Using the code chunks below, we will also include the local Moran's I map and p-
 
 ```{r}
 tmap_arrange(localMI.map, pvalue.map, asp=1, ncol=2)
+```
+
+# 9. Hot Spot and Cold Spot Area Analysis
+
+Besides detecting cluster and outliers, localised spatial statistics can also be used to detect hot spot and/or cold spot areas.
+
+## 9.1 Getis and Ord's G-Statistics
+
+An alternative spatial statistics to detect spatial anomalies is the Getis and Ord's G-statistics (Getis and Ord, 1972; Ord and Getis, 1995). It looks at neighbours within a defined proximity to identify where either high or low values clutser spatially. Here, statistically significant hot-spots are recognised as areas of high values where other areas within a neighbourhood range also share high values too.
+
+### 9.1.1 Gi statistics using fixed distance
+
+Using the code chunk below, we will first convert the nb object (i.e. wm_d72) into a spatial weights object using nb2listw() of spdep. Then we will compute the local spatial G statistics for each neighbour using localG() of spdep.
+
+```{r}
+wm72_lw <- nb2listw(wm_d72, style = "B")
+gi.fixed <- localG(nga_wp$`wpt non-functional`, wm72_lw)
+gi.fixed
+```
+
+Gi statistics is represented as a Z-score. Greater values represent a greater intensity of clustering and the direction (positive or negative) indicates high or low clusters.
+
+Using the code chunk below, we will next join the Gi values to their corresponding Nigeria sf data frame. First, it converts the output vector (i.e. gi.fixed) into r matrix object by using as.matrix(). Next, cbind() is used to join nga_wp and gi.fixed matrix to produce a new SpatialPolygonDataFrame called nga.gi. Lastly, the field name of the gi values is renamed to gstat_fixed by using rename().
+
+```{r}
+nga.gi <- cbind(nga_wp, as.matrix(gi.fixed)) %>%
+  rename(gstat_fixed = as.matrix.gi.fixed.)
+```
+
+### 9.1.2 Mapping Gi values with fixed distance weights
+
+Using the code chunk below, we wil map the Gi values derived using fixed distance weight matrix.
+
+```{r}
+nft <- qtm(nga_wp, "wpt non-functional")
+
+Gimap <-tm_shape(nga.gi) +
+  tm_fill(col = "gstat_fixed", 
+          style = "pretty",
+          palette="-RdBu",
+          title = "Local Gi") +
+  tm_borders(alpha = 0.5)
+
+tmap_arrange(nft, Gimap, asp=1, ncol=2)
+```
+
+### 9.1.3 Gi statistics using adaptive distance
+
+Using the code chunk below, we will compute the Gi values by using an adaptive distance weight matrix. We will first convert the nb object (i.e. knn8) into a spatial weights object using nb2listw() of spdep. Then we will compute the local spatial G statistics for each neighbour using localG() of spdep.
+
+```{r}
+knn8_lw <- nb2listw(knn8, style = "B")
+gi.adaptive <- localG(nga_wp$`wpt non-functional`, knn8_lw)
+nga.gi <- cbind(nga_wp, as.matrix(gi.adaptive)) %>%
+  rename(gstat_adaptive = as.matrix.gi.adaptive.)
+```
+
+### 9.1.4 Mappin Gi values with adaptive distance weights
+
+Using the code chunks below, we will visualise the locations of hot spot and cold spot areas. The choropleth mapping functions of tmap package will be used to map the Gi values.
+
+```{r}
+nft<- qtm(nga_wp, "wpt non-functional")
+
+Gimap <- tm_shape(nga.gi) + 
+  tm_fill(col = "gstat_adaptive", 
+          style = "pretty", 
+          palette="-RdBu", 
+          title = "Local Gi") + 
+  tm_borders(alpha = 0.5)
+
+tmap_arrange(nft, 
+             Gimap, 
+             asp=1, 
+             ncol=2)
 ```
