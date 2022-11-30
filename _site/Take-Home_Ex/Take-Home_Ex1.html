@@ -260,7 +260,8 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   </ul></li>
   <li><a href="#cluster-and-outlier-analysis" id="toc-cluster-and-outlier-analysis" class="nav-link" data-scroll-target="#cluster-and-outlier-analysis">8. Cluster and Outlier Analysis</a>
   <ul class="collapse">
-  <li><a href="#section-2" id="toc-section-2" class="nav-link" data-scroll-target="#section-2"></a>
+  <li><a href="#section-2" id="toc-section-2" class="nav-link" data-scroll-target="#section-2"></a></li>
+  <li><a href="#computing-local-morans-i" id="toc-computing-local-morans-i" class="nav-link" data-scroll-target="#computing-local-morans-i">8.1 Computing local Moran’s I</a>
   <ul class="collapse">
   <li><a href="#mapping-the-local-morans-i" id="toc-mapping-the-local-morans-i" class="nav-link" data-scroll-target="#mapping-the-local-morans-i">8.1.1 Mapping the local Moran’s I</a></li>
   <li><a href="#mapping-both-local-morans-i-values-and-p-values" id="toc-mapping-both-local-morans-i-values-and-p-values" class="nav-link" data-scroll-target="#mapping-both-local-morans-i-values-and-p-values">8.1.2 Mapping both local Moran’s I values and p-values</a></li>
@@ -283,6 +284,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   <li><a href="#mappin-gi-values-with-adaptive-distance-weights" id="toc-mappin-gi-values-with-adaptive-distance-weights" class="nav-link" data-scroll-target="#mappin-gi-values-with-adaptive-distance-weights">9.1.4 Mappin Gi values with adaptive distance weights</a></li>
   </ul></li>
   </ul></li>
+  <li><a href="#section-3" id="toc-section-3" class="nav-link" data-scroll-target="#section-3"></a></li>
   </ul>
 </nav>
     </div>
@@ -460,7 +462,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div class="cell">
 <div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">st_crs</span>(nga_wp)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>Although <code>the nga_wp</code>data frame is projected in WGS84 but when we read until the end of the print, it indicates that the EPSG is 4326. This is a wrong EPSG code because the correct EPSG code for WGS84 should be either 26391, 26392, or 26303</p>
+<p><em>Observation: Although <code>the nga_wp</code>data frame is projected in WGS84 but when we read until the end of the print, it indicates that the EPSG is 4326. This is a wrong EPSG code because the correct EPSG code for WGS84 should be either 26391, 26392, or 26303</em></p>
 <p>Using the code below, <em>st_transform()</em> of <strong>sf</strong> package is used to assign the correct EPSG code (which we will select 26391) to <code>nga_wp</code> data frame.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>nga_wp26391 <span class="ot">&lt;-</span> <span class="fu">st_transform</span>(nga_wp,</span>
@@ -518,7 +520,7 @@ Link number distribution:
 516 with 13 links</code></pre>
 </div>
 </div>
-<p>The summary report above shows that there are 773 area units in Nigeria. The most connected area unit has 13 neighbours, while 2 area units only have one neighbour each.</p>
+<p><em>Observation: The summary report above shows that there are 773 area units in Nigeria. The most connected area unit has 13 neighbours, while 2 area units only have one neighbour each.</em></p>
 </section>
 <section id="visualising-contiguity-weights" class="level2">
 <h2 class="anchored" data-anchor-id="visualising-contiguity-weights">4.2 Visualising contiguity weights</h2>
@@ -581,7 +583,7 @@ Link number distribution:
   3.001  12.555  20.575  22.026  28.240  71.769 </code></pre>
 </div>
 </div>
-<p>The summary report shows that the largest first neighbour distance is 71.769km, so using this as the upper threshold gives certainty that all units will have at least one neighbour.</p>
+<p><em>Observation: The summary report shows that the largest first neighbour distance is 71.769km, so using this as the upper threshold gives certainty that all units will have at least one neighbour.</em></p>
 </section>
 <section id="computing-fixed-distance-weight-matrix" class="level2">
 <h2 class="anchored" data-anchor-id="computing-fixed-distance-weight-matrix">5.2 Computing fixed distance weight matrix</h2>
@@ -597,7 +599,7 @@ Percentage nonzero weights: 3.031485
 Average number of links: 23.43338 </code></pre>
 </div>
 </div>
-<p>The summary report above shows that on average, each area unit is nearest in distance to another 23 area units.</p>
+<p><em>Observation: The summary report above shows that on average, each area unit is nearest in distance to another 23 area units.</em></p>
 <section id="plotting-fixed-distance-weight-matrix" class="level3">
 <h3 class="anchored" data-anchor-id="plotting-fixed-distance-weight-matrix">5.2.1 Plotting fixed distance weight matrix</h3>
 <p>Using the code chunk below, we will plot the distance weight matrix.</p>
@@ -680,6 +682,7 @@ W 773 597529 773 281.9605 3193.332</code></pre>
 <pre><code>Joining, by = "ADM2_CODE"</code></pre>
 </div>
 </div>
+<p><em>Observation: In the course of this study, i had attempted to join compute the list using ADM2_Name (which was similar to the “County” in the Hunan dataset). However, I kept running into errors, and eventually i realised that the names of the villages (e.g.&nbsp;ADM2_Name) were not unique. However, the ADM2_Code were unique! It reflected that different villages could share the same name while being at very different places.</em></p>
 <p>Using the code chunk below, we will now plot both the non-functional wpt and the spatial lag non-functional wpt for comparison.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>nft <span class="ot">&lt;-</span> <span class="fu">qtm</span>(nga_wp, <span class="st">"wpt non-functional"</span>)</span>
@@ -766,7 +769,7 @@ Moran I statistic       Expectation          Variance
      0.4301096187     -0.0012953368      0.0004665373 </code></pre>
 </div>
 </div>
-<p>As p-value is &lt;0.025, we can conclude that it is statistically significant that the distribution of non-functional waterpoints are randomly distributed.</p>
+<p><em>Observation: As p-value is &lt;0.025, we can conclude that it is statistically significant that the distribution of non-functional waterpoints are randomly distributed.</em></p>
 <section id="computing-monte-carlo-morans-i" class="level3">
 <h3 class="anchored" data-anchor-id="computing-monte-carlo-morans-i">7.1.1 Computing Monte Carlo Moran’s I</h3>
 <p>Using the code chunk below, we will perform permutation test for Moran’s I statistic by using moran.mc() of spdep. A total of 1,000 simulations will be performed.</p>
@@ -790,7 +793,7 @@ statistic = 0.43011, observed rank = 1000, p-value = 0.001
 alternative hypothesis: greater</code></pre>
 </div>
 </div>
-<p>From the output above, as p-value is &lt; 0.025, it supports the earlier statistical conclusion that the distribution of the non-functional water points are indeed randomly distributed.</p>
+<p><em>Observation: From the output above, as p-value is &lt; 0.025, it supports the earlier statistical conclusion that the distribution of the non-functional water points are indeed randomly distributed.</em></p>
 </section>
 <section id="visualising-monte-carlo-morans-i" class="level3">
 <h3 class="anchored" data-anchor-id="visualising-monte-carlo-morans-i">7.1.2 Visualising Monte Carlo Moran’s I</h3>
@@ -832,7 +835,9 @@ alternative hypothesis: greater</code></pre>
 <p>Local Indicators of Spatial Association or LISA are statistics that evaluate the existence of clusters in the spatial arrangement of a given variable. In this instance, we will be studying non-functional water points among census tracts in the Nigerian city local clusters in the rates mean that there are areas that have higher or lower rates than is to be expected by chance alone; that is, the values occurring are above or below those of a random distribution in space.</p>
 <section id="section-2" class="level2">
 <h2 class="anchored" data-anchor-id="section-2"></h2>
-<p>8.1 Computing local Moran’s I</p>
+</section>
+<section id="computing-local-morans-i" class="level2">
+<h2 class="anchored" data-anchor-id="computing-local-morans-i">8.1 Computing local Moran’s I</h2>
 <p>Using the code chunk below, we will compute local Moran’s I, using the localmoran() function of spdep. It computes <em>Ii</em> values, given a set of <em>zi</em> values and a listw object providing neighbour weighting information for the polygon associated with the zi values.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb58"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a>fips <span class="ot">&lt;-</span> <span class="fu">order</span>(nga_wp<span class="sc">$</span>ADM2_CODE)</span>
@@ -912,7 +917,7 @@ alternative hypothesis: greater</code></pre>
 <p><img src="Take-Home_Ex1_files/figure-html/unnamed-chunk-47-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
-<p>The output is split into 4 quadrants. The top right corner belongs to areas that have high non-functional water points and are surrounded by other areas that have the average level of non-functional water points.</p>
+<p><em>Observation: The output is split into 4 quadrants. The top right corner belongs to areas that have high non-functional water points and are surrounded by other areas that have the average level of non-functional water points.</em></p>
 </section>
 <section id="plotting-moran-scatterplot-with-standardised-variable" class="level3">
 <h3 class="anchored" data-anchor-id="plotting-moran-scatterplot-with-standardised-variable">8.2.2 Plotting Moran scatterplot with standardised variable</h3>
@@ -1313,10 +1318,13 @@ attr(,"class")
 <p><img src="Take-Home_Ex1_files/figure-html/unnamed-chunk-63-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
-
-
 </section>
 </section>
+</section>
+<section id="section-3" class="level1">
+<h1></h1>
+
+
 </section>
 
 </main> <!-- /main -->

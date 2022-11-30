@@ -201,7 +201,7 @@ Using the code chunk below, we will examine the current coordinate system of `ng
 st_crs(nga_wp)
 ```
 
-Although `the nga_wp`data frame is projected in WGS84 but when we read until the end of the print, it indicates that the EPSG is 4326. This is a wrong EPSG code because the correct EPSG code for WGS84 should be either 26391, 26392, or 26303
+*Observation: Although `the nga_wp`data frame is projected in WGS84 but when we read until the end of the print, it indicates that the EPSG is 4326. This is a wrong EPSG code because the correct EPSG code for WGS84 should be either 26391, 26392, or 26303*
 
 Using the code below, *st_transform()* of **sf** package is used to assign the correct EPSG code (which we will select 26391) to `nga_wp` data frame.
 
@@ -258,7 +258,7 @@ wm_q <- poly2nb(nga_wp, queen = TRUE)
 summary(wm_q)
 ```
 
-The summary report above shows that there are 773 area units in Nigeria. The most connected area unit has 13 neighbours, while 2 area units only have one neighbour each.
+*Observation: The summary report above shows that there are 773 area units in Nigeria. The most connected area unit has 13 neighbours, while 2 area units only have one neighbour each.*
 
 ## 4.2 Visualising contiguity weights
 
@@ -317,7 +317,7 @@ k1dists <- unlist(nbdists(k1, coords, longlat = TRUE))
 summary(k1dists)
 ```
 
-The summary report shows that the largest first neighbour distance is 71.769km, so using this as the upper threshold gives certainty that all units will have at least one neighbour.
+*Observation: The summary report shows that the largest first neighbour distance is 71.769km, so using this as the upper threshold gives certainty that all units will have at least one neighbour.*
 
 ## 5.2 Computing fixed distance weight matrix
 
@@ -328,7 +328,7 @@ wm_d72 <- dnearneigh(coords, 0, 72, longlat = TRUE)
 wm_d72
 ```
 
-The summary report above shows that on average, each area unit is nearest in distance to another 23 area units.
+*Observation: The summary report above shows that on average, each area unit is nearest in distance to another 23 area units.*
 
 ### 5.2.1 Plotting fixed distance weight matrix
 
@@ -389,6 +389,8 @@ lag.res <- as.data.frame(lag.list)
 colnames(lag.res) <- c("ADM2_CODE", "lag wpt non-functional")
 nga_wp <- left_join(nga_wp, lag.res)
 ```
+
+*Observation: In the course of this study, i had attempted to join compute the list using ADM2_Name (which was similar to the "County" in the Hunan dataset). However, I kept running into errors, and eventually i realised that the names of the villages (e.g. ADM2_Name) were not unique. However, the ADM2_Code were unique! It reflected that different villages could share the same name while being at very different places.*
 
 Using the code chunk below, we will now plot both the non-functional wpt and the spatial lag non-functional wpt for comparison.
 
@@ -451,7 +453,7 @@ moran.test(nga_wp$`wpt non-functional`,
            na.action = na.omit)
 ```
 
-As p-value is \<0.025, we can conclude that it is statistically significant that the distribution of non-functional waterpoints are randomly distributed.
+*Observation: As p-value is \<0.025, we can conclude that it is statistically significant that the distribution of non-functional waterpoints are randomly distributed.*
 
 ### 7.1.1 Computing Monte Carlo Moran's I
 
@@ -467,7 +469,7 @@ bperm = moran.mc(nga_wp$`wpt non-functional`,
 bperm
 ```
 
-From the output above, as p-value is \< 0.025, it supports the earlier statistical conclusion that the distribution of the non-functional water points are indeed randomly distributed.
+*Observation: From the output above, as p-value is \< 0.025, it supports the earlier statistical conclusion that the distribution of the non-functional water points are indeed randomly distributed.*
 
 ### 7.1.2 Visualising Monte Carlo Moran's I
 
@@ -499,7 +501,7 @@ Local Indicators of Spatial Association or LISA are statistics that evaluate the
 
 ## 
 
-8.1 Computing local Moran's I
+## 8.1 Computing local Moran's I
 
 Using the code chunk below, we will compute local Moran's I, using the localmoran() function of spdep. It computes *Ii* values, given a set of *zi* values and a listw object providing neighbour weighting information for the polygon associated with the zi values.
 
@@ -573,7 +575,7 @@ nci <- moran.plot(nga_wp$`wpt non-functional`, rswm_q,
                   ylab="Spatially Lag Non Functional Water Points")
 ```
 
-The output is split into 4 quadrants. The top right corner belongs to areas that have high non-functional water points and are surrounded by other areas that have the average level of non-functional water points.
+*Observation: The output is split into 4 quadrants. The top right corner belongs to areas that have high non-functional water points and are surrounded by other areas that have the average level of non-functional water points.*
 
 ### 8.2.2 Plotting Moran scatterplot with standardised variable
 
@@ -756,3 +758,5 @@ tmap_arrange(nft,
              asp=1, 
              ncol=2)
 ```
+
+# 
