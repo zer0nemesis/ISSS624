@@ -383,19 +383,16 @@ rswm_q
 We will be computing the average neighbour non-functional wpt value for each polygon. Using the code chunk below, we append the spatially lag non-functional waterpoint values onto the Nigeria sf data frame using left_join().
 
 ```{r}
-#| eval: false
 
-lag.list <- list(nga_wp$HRname, lag.listw(rswm_q, nga_wp$`wpt non-functional`))
+lag.list <- list(nga_wp$ADM2_CODE, lag.listw(rswm_q, nga_wp$`wpt non-functional`) )
 lag.res <- as.data.frame(lag.list)
-colnames(lag.res) <- c("HRname", "lag wpt non-functional")
+colnames(lag.res) <- c("ADM2_CODE", "lag wpt non-functional")
 nga_wp <- left_join(nga_wp, lag.res)
 ```
 
 Using the code chunk below, we will now plot both the non-functional wpt and the spatial lag non-functional wpt for comparison.
 
 ```{r}
-#| eval: false
-
 nft <- qtm(nga_wp, "wpt non-functional")
 lag_nft <- qtm(nga_wp, "lag wpt non-functional")
 
@@ -409,6 +406,7 @@ Next, we will calculate spatial lag as a sum of neighboring values by assigning 
 We will start by applying a function that will assign a value of 1 per each neighbor. This is done with lapply, to manipulate the neighbors structure. This applies a function across each value in the neighbors structure.
 
 ```{r}
+
 b_weights <- lapply(wm_q, function(x) 0*x + 1)
 b_weights2 <- nb2listw(wm_q, 
                        glist = b_weights, 
@@ -419,27 +417,20 @@ b_weights2
 With the weights assigned, we will now use lag.listw of spdep to compute a lag variable from our weight and non-functional wpt.
 
 ```{r}
-#| eval: false
-
-lag_sum <- list(nga_wp$HRname, lag.listw(b_weights2, nga_wp$`wpt non-functional`))
+lag_sum <- list(nga_wp$ADM2_CODE, lag.listw(b_weights2, nga_wp$`wpt non-functional`))
 lag.res <- as.data.frame(lag_sum)
-colnames(lag.res) <- c("HRname", "lag_sum wpt non-functional")
-lag.listw()
+colnames(lag.res) <- c("ADM2_CODE", "lag_sum wpt non-functional")
 ```
 
 Using the code chunk below, we will append the lag_sum wpt non functional to the nga_wp sf data frame
 
 ```{r}
-#| eval: false
-
 nga_wp <-left_join(nga_wp, lag.res)
 ```
 
 Using the code chunk below, we can now plot both the non-functional water points and spatial lag non-functional water points for comparison.
 
 ```{r}
-#| eval: false
-
 nft <- qtm(nga_wp, "wpt non-functional")
 lag_sum_nft <- qtm(nga_wp, "lag_sum wpt non-functional")
 tmap_arrange(nft, lag_sum_nft, asp=1, ncol=2)
@@ -513,7 +504,7 @@ Local Indicators of Spatial Association or LISA are statistics that evaluate the
 Using the code chunk below, we will compute local Moran's I, using the localmoran() function of spdep. It computes *Ii* values, given a set of *zi* values and a listw object providing neighbour weighting information for the polygon associated with the zi values.
 
 ```{r}
-fips <- order(nga_wp$HRname)
+fips <- order(nga_wp$ADM2_CODE)
 localMI <- localmoran(nga_wp$`wpt non-functional`, rswm_q)
 head(localMI)
 ```
@@ -532,7 +523,7 @@ The output above from localmoran() function returns a matrix of values whose col
 
 ### 8.1.1 Mapping the local Moran's I
 
-Using the code chunk below, we will append the local Moran's I dataframe (i.e. localMI) onto Nigeria SpatialPolygonDataFrame. The output SpatialPolygonDataFrame is called *nga.localMI*.
+Using the code chunk below, we will append the local Moran's I dataframe (i.e. localMI) onto Nigeria SpatialPolygonDataFrame. The output SpatialPolygonDataFrame is called nga.localMI.
 
 ```{r}
 nga.localMI <- cbind(nga_wp, localMI) %>%
@@ -607,5 +598,86 @@ nci2 <- moran.plot(nga_wp_Z, rswm_q,
 Using the code chunks below, we will prepare the LISA cluster map.
 
 ```{r}
+quadrant <- vector(mode="numeric", length=nrow(localMI))
+```
 
+Next, we will derive the spatially lagged variable of interest (i.e. non functional water points) and centers the spatially lagged variable around its mean.
+
+```{r}
+nga_wp$`lag wpt non-functional` <- lag.listw(rswm_q, nga_wp$`wpt non-functional`)
+DV <- nga_wp$`lag wpt non-functional` - mean(nga_wp$`lag wpt non-functional`)
+```
+
+This is followed by centering the local Moran's I around the mean.
+
+```{r}
+LM_I <- localMI[,1] - mean(localMI[,1])
+```
+
+Next, we will set up a statistical significance level for the local Moran.
+
+```{r}
+signif <- 0.05
+```
+
+```{r}
+quadrant[DV <0 & LM_I>0] <- 1
+quadrant[DV >0 & LM_I<0] <- 2
+quadrant[DV <0 & LM_I<0] <- 3  
+quadrant[DV >0 & LM_I>0] <- 4 
+```
+
+Last;y, we place the non-significant Moran in the category "0".
+
+```{r}
+quadrant[localMI[,5]>signif] <- 0
+```
+
+## 8.4 Plotting LISA map
+
+Using the code chunks below, we can now build the LISA map.
+
+```{r}
+nga.localMI$quadrant <- quadrant
+colors <- c("#ffffff", "#2c7bb6", "#abd9e9", "#fdae61", "#d7191c")
+clusters <- c("insignificant", "low-low", "low-high", "high-low", "high-high")
+
+tm_shape(nga.localMI) +
+  tm_fill(col = "quadrant", 
+          style = "cat", 
+          palette = colors[c(sort(unique(quadrant)))+1], 
+          labels = clusters[c(sort(unique(quadrant)))+1],
+          popup.vars = c("")) +
+  tm_view(set.zoom.limits = c(11,17)) +
+  tm_borders(alpha=0.5)
+```
+
+For effective interpretation, it is better to plot both the local MOran's I values map and its corresponding p-values next to each other.
+
+Using the code chunks below, we will create such a visualisation.
+
+```{r}
+nft <- qtm(nga_wp, "wpt non-functional")
+
+nga.localMI$quadrant <- quadrant
+colors <- c("#ffffff", "#2c7bb6", "#abd9e9", "#fdae61", "#d7191c")
+clusters <- c("insignificant", "low-low", "low-high", "high-low", "high-high")
+
+LISAmap <- tm_shape(nga.localMI) +
+  tm_fill(col = "quadrant", 
+          style = "cat", 
+          palette = colors[c(sort(unique(quadrant)))+1], 
+          labels = clusters[c(sort(unique(quadrant)))+1],
+          popup.vars = c("")) +
+  tm_view(set.zoom.limits = c(11,17)) +
+  tm_borders(alpha=0.5)
+
+tmap_arrange(nft, LISAmap, 
+             asp=1, ncol=2)
+```
+
+Using the code chunks below, we will also include the local Moran's I map and p-value map for easier comparison.
+
+```{r}
+tmap_arrange(localMI.map, pvalue.map, asp=1, ncol=2)
 ```
