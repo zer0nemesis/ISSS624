@@ -15,6 +15,9 @@ website:
           href: In-Class_Ex/In-Class_Ex1.qmd
         - text: Global and Local Measures of Spatial Autocorrelation [4]
           href: Hands-On_Ex/Hands-On_Ex2/Hands-On_Ex2.qmd
+        - text: Geographical Segmentation with Spatially Constrained Clustering Techniques [5]
+          href: Hands-On_Ex/Hands-On_Ex3/Hands-On_Ex3.qmd
+          
           
     - text: Take Home Exercises
       menu:
