@@ -330,8 +330,7 @@ corrplot.mixed(cluster_vars.cor,
 
 The correlation plot above shows that COMPUTER_PR and INTERNET_PR are highly correlated. This suggest that only one of them should be used in the cluster analysis instead of both.
 
-# 
-6. Hierarchy Cluster Analysis
+# 6. Hierarchy Cluster Analysis
 
 In this section, we will perform hierarchical cluster analysis, which consists of four major steps:
 
