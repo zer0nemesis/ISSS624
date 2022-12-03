@@ -447,7 +447,7 @@ In R, many packages provide functions to calculate distance matrix. We will comp
 
 Using the code chunk below, we will compute the proximity matrix using *euclidean* method, then list the content of *proxmat* for visual inspection.
 
-```{r}
+```{r, echo=FALSE, eval=TRUE}
 proxmat <- dist(shan_ict, method = 'euclidean')
 proxmat
 ```
