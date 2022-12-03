@@ -77,7 +77,7 @@ library(pacman)
 ```
 
 ```{r}
-pacman::p_load(rgdal, spdep, tmap, sf, ggpubr, cluster, factoextra, NbClust, heatmaply, corrplot, psych, tidyverse)
+pacman::p_load(rgdal, spdep, tmap, sf, ggpubr, cluster, factoextra, NbClust, heatmaply, corrplot, psych, tidyverse, ClustGeo)
 ```
 
 Note: With **tidyverse**, we do not have to install **readr**, **ggplot2** and **dplyr** packages separately. In fact, **tidyverse** also installs other very useful R packages such as **tidyr**.
@@ -540,7 +540,7 @@ The height of the fusion, provided on the vertical axis, indicates the (dis)simi
 
 Using the code chunk below, we will draw the dendrogram with a border around the selected clusters by using [*rect.hclust()*](https://stat.ethz.ch/R-manual/R-devel/library/stats/html/rect.hclust.html) of R stats. The argument *border* is used to specify the border colors for the rectangles.
 
-```{r}
+```{r, fig.width=10, fig.height=6}
 plot(hclust_ward, cex = 0.6)
 rect.hclust(hclust_ward, 
             k = 6, 
@@ -642,7 +642,7 @@ summary(shan.nb)
 
 Using the code chunk below, we can plot the neighbours list on shan_sp. Since we now can plot the community area boundaries as well, we plot this graph on top of the map. The first plot command gives the boundaries. This is followed by the plot of the neighbor list object, with coordinates applied to the original SpatialPolygonDataFrame (Shan state township boundaries) to extract the centroids of the polygons. These are used as the nodes for the graph representation. We also set the color to blue and specify add=TRUE to plot the network on top of the boundaries.
 
-```{r}
+```{r, fig.width=15, fig.height=10}
 plot(shan_sp, 
      border=grey(.5))
 plot(shan.nb, 
@@ -655,7 +655,7 @@ Note that if you plot the network first and then the boundaries, some of the are
 
 ## 7.3 Computing minimum spanning tree
 
-7.3.1 Calculating edge costs
+### 7.3.1 Calculating edge costs
 
 Next, [*nbcosts()*](https://r-spatial.github.io/spdep/reference/nbcosts.html) of **spdep** package is used to compute the cost of each edge. It is the distance between it nodes. This function compute this distance using a data.frame with observations vector in each node.
 
@@ -714,7 +714,7 @@ plot.mst(shan.mst,
          coordinates(shan_sp), 
          col="blue", 
          cex.lab=0.7, 
-         cex.circles=0.005, 
+         cex.circles=0.0005, 
          add=TRUE)
 ```
 
@@ -795,3 +795,77 @@ tmap_arrange(hclust.map, shclust.map,
 In this section, we will use functions provided by **ClustGeo** package to perform non-spatially constrained hierarchical cluster analysis and spatially constrained cluster analysis.
 
 ## 8.1 Ward-like hierarchical clustering: ClustGeo
+
+ClustGeo package provides function called `hclustgeo()` to perform a typical Ward-like hierarchical clustering just like `hclust()` in the previous section.
+
+Using the code chunk below, we will the function a dissimilarity matrix to perform non-spatially constrained hierarchical clustering.
+
+```{r}
+nongeo_cluster <- hclustgeo(proxmat)
+plot(nongeo_cluster, cex = 0.5)
+rect.hclust(nongeo_cluster, 
+            k = 6, 
+            border = 2:5)
+```
+
+Note that the dissimilarity matrix must be an object of class `dist`, i.e. an object obtained with the function `dist()`. For sample code chunk, please refer to Section 6.4.
+
+### 
+8.1.1 Mapping the clusters formed
+
+Similarly, we can plot the clusters on a categorical area shaded map by using the steps we learned in Section 6.10.
+
+```{r}
+groups <- as.factor(cutree(nongeo_cluster, k=6))
+```
+
+```{r}
+shan_sf_ngeo_cluster <- cbind(shan_sf, as.matrix(groups)) %>%
+  rename(`CLUSTER` = `as.matrix.groups.`)
+```
+
+```{r}
+qtm(shan_sf_ngeo_cluster, "CLUSTER")
+```
+
+## 8.2 Spatially constrained hierarchical clustering
+
+Before we can performed spatially constrained hierarchical clustering, a spatial distance matrix will be derived by using [`st_distance()`](https://r-spatial.github.io/sf/reference/geos_measures.html) of sf package.
+
+```{r}
+dist <- st_distance(shan_sf, shan_sf)
+distmat <- as.dist(dist)
+```
+
+Notice that `as.dist()` is used to convert the data frame into matrix.
+
+Next, `choicealpha()` will be used to determine a suitable value for the mixing parameter alpha as shown in the code chunk below.
+
+```{r}
+cr <- choicealpha(proxmat, distmat, range.alpha = seq(0, 1, 0.1), K=6, graph = TRUE)
+```
+
+Using the code chunk below, with reference to the graphs above, we will use alpha = 0.3.
+
+```{r}
+clustG <- hclustgeo(proxmat, distmat, alpha = 0.3)
+```
+
+Next, `cutree()` is used to derive the cluster object.
+
+```{r}
+groups <- as.factor(cutree(clustG, k=6))
+```
+
+Using the code chunk below, we will then join back the group list with shan_sf polygon feature data frame.
+
+```{r}
+shan_sf_Gcluster <- cbind(shan_sf, as.matrix(groups)) %>%
+  rename(`CLUSTER` = `as.matrix.groups.`)
+```
+
+We can now plot the map of the newly delineated spatially constrained clusters.
+
+```{r}
+qtm(shan_sf_Gcluster, "CLUSTER")
+```
