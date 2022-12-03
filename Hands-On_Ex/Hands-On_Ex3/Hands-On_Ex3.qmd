@@ -447,7 +447,7 @@ In R, many packages provide functions to calculate distance matrix. We will comp
 
 Using the code chunk below, we will compute the proximity matrix using *euclidean* method, then list the content of *proxmat* for visual inspection.
 
-```{r, echo=FALSE, eval=TRUE}
+```{r, echo=TRUE, eval=TRUE}
 proxmat <- dist(shan_ict, method = 'euclidean')
 proxmat
 ```
@@ -466,7 +466,9 @@ hclust_ward <- hclust(proxmat, method = 'ward.D')
 
 Using the code chunk below, we can then plot the tree by using *plot()* of R Graphics.
 
-```{r}
+*Note: we can increase cex value if need be.*
+
+```{r, fig.width=10, fig.height=3}
 plot(hclust_ward, cex = 0.6)
 ```
 
