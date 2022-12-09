@@ -13,3 +13,4 @@ Starting from:
 3.  Spatial Weights and Applications
 4.  Global and Local Measures of Spatial Autocorrelation
 5.  Geographical Segmentation with Spatially Constrained Clustering Techniques
+6.  Calibrating Hedonic Pricing Model for Private Highrise Property with GWR Method

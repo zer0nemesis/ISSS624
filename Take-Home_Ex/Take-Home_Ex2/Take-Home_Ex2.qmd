@@ -1,0 +1,706 @@
+---
+title: "Take-Home_Ex2"
+author: "Roger"
+editor: visual
+format: html
+execute: 
+  warning: false
+  message: false
+---
+
+# 1. Overview
+
+Water is an important resource to mankind. Clean and accessible water is critical to human health. It provides a healthy environment, a sustainable economy, reduces poverty and ensures peace and security. Yet over 40% of the global population does not have access to sufficient clean water. By 2025, 1.8 billion people will be living in countries or regions with absolute water scarcity, according to UN-Water. The lack of water poses a major threat to several sectors, including food security. Agriculture uses about 70% of the world's accessible freshwater.
+
+Developing countries are most affected by water shortages and poor water quality. Up to 80% of illnesses in the developing world are linked to inadequate water and sanitation. Despite technological advancement, providing clean water to the rural community is still a major development issues in many countries globally, especially countries in the Africa continent.
+
+To address the issue of providing clean and sustainable water supply to the rural community, a global [Water Point Data Exchange (WPdx)](https://www.waterpointdata.org/about/) project has been initiated. The main aim of this initiative is to collect water point related data from rural areas at the water point or small water scheme level and share the data via WPdx Data Repository, a cloud-based data library. What is so special of this project is that data are collected based on [WPDx Data Standard](https://www.waterpointdata.org/wp-content/uploads/2021/04/WPDx_Data_Standard.pdf).
+
+## 1.1 Setting the scene
+
+The process of creating regions is called [regionalisation](https://www.researchgate.net/publication/28153673_Supervised_Regionalization_Methods_A_Survey/link/0fcfd5094046b13d35000000/download). A regionalisation is a special kind of clustering where the objective is to group observations which are similar in their statistical attributes, but also in their spatial location. In this sense, regionalization embeds the same logic as standard clustering techniques, but also applies a series of geographical constraints. Often, these constraints relate to connectivity: two candidates can only be grouped together in the same region if there exists a path from one member to another member that never leaves the region. These paths often model the spatial relationships in the data, such as contiguity or proximity. However, connectivity does not always need to hold for all regions, and in certain contexts it makes sense to relax connectivity or to impose different types of geographic constraints.
+
+## 1.2 Objectives
+
+In this study, we will regionalise Nigeria by using, but not limited to the following measures:
+
+-   Total number of functional water points
+
+-   Total number of nonfunctional water points
+
+-   Percentage of functional water points
+
+-   Percentage of non-functional water points
+
+-   Percentage of main water point technology (i.e. Hand Pump)
+
+-   Percentage of usage capacity (i.e. \< 1000, \>=1000)
+
+-   Percentage of rural water points
+
+In the code chunk below, p_load(0 of pacman package is used to load the following R packages into R environment:
+
+-   Spatial data handling
+
+    -   **sf**, **rgdal** and **spdep**
+
+-   Attribute data handling
+
+    -   **tidyverse**, especially **readr**, **ggplot2** and **dplyr**
+
+-   Choropleth mapping
+
+    -   **tmap**
+
+-   Exploratory data analysis, data preparation and model performance
+
+    -   funModeling
+
+-   Multivariate data visualisation and analysis
+
+    -   **coorplot**, **ggpubr**, and **heatmaply**
+
+-   Cluster analysis
+
+    -   **cluster**
+
+    -   **ClustGeo**
+
+```{r}
+pacman::p_load(rgdal, spdep, tmap, sf, ggpubr, cluster, factoextra, NbClust, heatmaply, corrplot, psych, tidyverse, funModeling)
+```
+
+# 2. Data Acquisition
+
+## 2.1 Importing the geospatial data
+
+For this study, two geospatial data will be used:
+
+### 2.1.1 Importing water point geospatial data
+
+-   The water point geospatial data will be downloaded from [WPdx Global Data Repositories](https://www.waterpointdata.org/access-data/), specifically the WPdx+ data set will be used. In the code chunk below, we will import the shapefile as simple features data table into R environment using st_read() of sf package. filter() of dplyr will be used to extract water point records of Nigeria.
+
+```{r}
+#| eval: false
+
+wp <- st_read(dsn = "data2",
+              layer= "geo_export",
+              crs = 4326) %>%
+  filter(clean_coun == "Nigeria")
+```
+
+Next, write_rds() of readr package is used to save the extracted sf data table (i.e. wp) into an output file in rds data format, and saved in the data sub-folder.
+
+```{r}
+#| eval: false
+
+write_rds(wp, "data2/wp_nga.rds")
+```
+
+### 2.1.2 Importing Nigeria LGA boundary geospatial data
+
+-   The Nigeria Level-2 Administrative Boundary (also known as Local Government Area) polygon features GIS data will be the second data set used in this study. The data is downloaded from [geoBoundaries](https://www.geoboundaries.org/). In the code chunk below, we will import the Nigeria LGA boundary shapefile data as a simple features data table into R environment using st_read() of sf package.
+
+```{r}
+#| eval: false
+
+nga <- st_read(dsn = "data2", 
+                 layer = "nga_polnda_adm2_1m_salb",
+                 crs = 4326)
+```
+
+## 2.2 Data Wrangling
+
+### 2.2.1 Removing duplicated names (if any)
+
+Using the code chunk below, we will first order our data frame by alphabetical order based on the HRname. We will then use the duplicated function of Base R to retrieve all the HRnames that have duplicates and store them in a list.
+
+```{r}
+#| eval: false
+
+nga <- nga[order(nga$HRname), ]
+
+duplicated_area <- nga$HRname[nga$HRname %in%
+                                nga$HRname[duplicated(nga$HRname)]]
+
+duplicated_area
+```
+
+From the above results, we identified 12 HRnames that are duplicates.
+
+Using the code chunk below, we will find out the index numbers of these duplicated values so that we can update the names subsequently.
+
+```{r}
+#| eval: false
+
+which(nga$HRname %in% c("Bassa", "Ifelodun", "Irepodun", "Nasarawa", "Obi", "Surulere"))
+```
+
+Using the code chunk below, we will access the individual index of the Nigeria data frame and differentiate these 12 HRnames by including their state name (*captured in ADM_1 Name*) e.g. Bassa(Kogi). We will also use the length() function to ensure that all duplicates are eliminated.
+
+```{r}
+#| eval: false
+
+nga$HRname[c(92, 93, 303, 304, 354, 355, 518, 519, 545, 546, 692, 693)] <- c("Bassa (Kogi)", "Bassa (Plateau)", "Ifelodun (Kwara)","Ifelodun (Osun)","Irepodun (Kwara)", "Irepodun (Osun)","Nassarawa(Kano)","Nassarawa(Nassarawa)", "Obi (Benue)","Obi(Nasarawa)", "Surulere (Lagos)", "Surulere (Oyo)")
+
+length((nga$HRname[nga$HRname %in%
+                     nga$HRname[duplicated(nga$HRname)]]))
+```
+
+### 2.2.2 Recoding NA values into string
+
+In the code chunk below, replace_na() of tidyr package is used to recode all the NA values in *status_cle* and *water_te_2* fields into "Unknown".
+
+```{r}
+#| eval: false
+
+wp_nga <- read_rds("data2/wp_nga.rds") %>%
+  mutate(status_cle = replace_na(status_cle, "Unknown")) %>%
+  mutate(water_te_2 = replace_na(water_te_2, "Unknown"))
+```
+
+### 2.2.3 Exploratory data analysis (EDA)
+
+In the code chunks below, freq() of funModeling package is used to display the distribution of *status_cle* field in *wp_nga*.
+
+```{r}
+#| eval: false
+
+freq(data = wp_nga,
+     input = "status_cle")
+```
+
+### 2.2.4 Extracting functional water point
+
+In the code chunk below, filter() of dplyr is used to select functional water points.
+
+```{r}
+#| eval: false
+
+wpt_functional <- wp_nga %>%
+  filter(status_cle %in%
+           c("Functional",
+             "Functional but not in use",
+             "Functional but needs repair"))
+```
+
+```{r}
+#| eval: false
+
+freq(data= wpt_functional,
+     input = "status_cle")
+```
+
+### 2.2.5 Extracting non-functional water point
+
+In the code chunk below, filter() of dplyr is used to select non-functional water points.
+
+```{r}
+#| eval: false
+
+wpt_nonfunctional <- wp_nga %>%
+  filter(status_cle %in%
+           c("Abandoned/Decommissioned",
+             "Abandoned",
+             "Non-Functional",
+             "Non functional due to dry season",
+             "Non-Functional due to dry season"))
+```
+
+```{r}
+#| eval: false
+
+freq(data = wpt_nonfunctional,
+     input = "status_cle")
+```
+
+### 2.2.6 Extracting main water point technology
+
+In the code chunks below, freq() of funModeling package is used to display the distribution of water technologies (i.e. *water_te_2* field) in *wp_nga*.
+
+In the code chunk below, filter() of dplyr is used to select water points whose main technology is hand pumps.
+
+```{r}
+wp_nga <- wp_nga[order(wp_nga$water_te_2), ]
+
+water_tech <- unique(wp_nga$water_te_2)
+
+water_tech
+```
+
+```{r}
+freq(data = wp_nga,
+     input = "water_te_2")
+```
+
+```{r}
+#| eval: false
+
+wpt_handpump <- wp_nga %>%
+  filter(water_te_2 %in%
+           c("Hand Pump",
+             "Hand Pump - Afridev",
+             "Hand Pump - India Mark II",
+             "Hand Pump - India Mark III",
+             "Hand Pump - Mono",
+             "Hand Pump - Rope Pump"))
+```
+
+```{r}
+freq(data = wpt_handpump,
+     input = "water_te_2")
+```
+
+```{r}
+wpt_mechpump <- wp_nga %>%
+  filter(water_te_2 %in%
+           c("Mechanized Pump",
+             "Mechanized Pump - Diesel",
+             "Mechanized Pump - Solar"))
+```
+
+```{r}
+freq(data = wpt_mechpump,
+     input = "water_te_2")
+```
+
+```{r}
+wpt_misc <- wp_nga %>%
+  filter(water_te_2 %in%
+           c("Rope and Bucket",
+             "Unknown"))
+```
+
+```{r}
+freq(data = wpt_misc,
+     input = "water_te_2")
+```
+
+### 2.2.7 Extracting usage capacity
+
+In the code chunk below, filter() of dplyr is used to select usage capacity (i.e. \<1000, \>= 1000).
+
+```{r}
+#| eval: false
+
+wpt_usage1000less <- wp_nga %>%
+  filter(usage_cap < 1000)
+
+wpt_usage1000more <- wp_nga %>%
+  filter(usage_cap >= 1000)
+```
+
+```{r}
+freq(data = wpt_usage1000less,
+     input = "usage_cap")
+```
+
+```{r}
+freq(data = wpt_usage1000more,
+     input = "usage_cap")
+```
+
+### 2.2.7 Extracting rural water points
+
+In the code chunk below, filter() of dplyr is used to select rural water points.
+
+```{r}
+freq(data = wp_nga,
+     input = "is_urban")
+```
+
+```{r}
+wpt_rural <- wp_nga %>%
+  filter(is_urban == FALSE)
+
+wpt_urban <- wp_nga %>%
+  filter(is_urban == TRUE)
+```
+
+### 2.2.8 Point-in-polygon overlay
+
+Although *wp_nga* sf data frame consists of a field called *#clean_adm2* which by right should provide the LGA name of the water point located, it is always a good practice to be more caution when dealing with data accuracy.
+
+In this section, we are going to use a geoprocessing function (or commonly know as GIS analysis) called **point-in-polygon overlay** to transfer the attribute information in *nga* sf data frame into *wp_sf* data frame.
+
+```{r}
+wp_nga <- st_join(wp_nga, nga)
+```
+
+Notice that a new field called HRname has been added into the wp_nga sf data frame as shown below.
+
+![](data2/screenshot.jpg)
+
+In the code chunk below, st_intersects() of sf is used to identify water points located in each Nigerian province; *lengths()* of Base R is used to calculate numbers of water points that fall inside each province, and mutate() of dplyr package is used to derive eight fields, namely: (a) total wpt, (b) wpt functional, (c) wpt non-functional, (d) wpt main tech (i.e. hand pump), (e) wpt main tech (i.e. mech pump), (f) usage capacity \>= 1000, (g) usage capacity \<1000, (h) rural water points.
+
+```{r}
+#| eval: false
+
+nga_wp <- nga %>% 
+  mutate(`total wpt` = lengths(
+    st_intersects(nga, wp_nga))) %>%
+  mutate(`wpt functional` = lengths(
+    st_intersects(nga, wpt_functional))) %>%
+  mutate(`wpt non-functional` = lengths(
+    st_intersects(nga, wpt_nonfunctional))) %>%
+  mutate(`wpt handpump` = lengths(
+    st_intersects(nga, wpt_handpump))) %>%
+  mutate(`wpt mechpump` = lengths(
+    st_intersects(nga, wpt_mechpump))) %>%
+  mutate(`wpt usage1000less` = lengths(
+    st_intersects(nga, wpt_usage1000less))) %>%
+  mutate(`wpt usage1000more` = lengths(
+    st_intersects(nga, wpt_usage1000more))) %>%
+  mutate(`wpt rural` = lengths(
+    st_intersects(nga, wpt_rural)))
+```
+
+### 2.2.9 Saving the analytical data table
+
+In the code chunk below, mutate() of dplyr package is used to drive seven fields, namely pct_functional, pct non-functional, pct wpt_handpump, pct wpt_mechpump, pct wpt_usage1000more, pct qpt_usage1000less and pct wpt_rural. To keep the file size small, select() of dplyr is used to retain only fields 3,4,9,10,18,19,20,21,22 and 23.
+
+```{r}
+#| eval: false
+
+nga_wp <- nga_wp %>% 
+  mutate(`pct_functional` = `wpt functional` / `total wpt`) %>%
+  mutate(`pct_non-functional` = `wpt non-functional`/ `total wpt`) %>%
+  mutate(`pct_handpump` = `wpt handpump`/ `total wpt`) %>%
+  mutate(`pct_mechpump` = `wpt mechpump`/ `total wpt`) %>%
+  mutate(`pct_usage1000less` = `wpt usage1000less`/ `total wpt`) %>%
+  mutate(`pct_usage1000more` = `wpt usage1000more`/ `total wpt`) %>%
+  mutate(`pct_rural` = `wpt rural`/ `total wpt`)
+```
+
+Next, write_rds() of readr package is used to save the extracted sf data table into an output file in rds data format, and saved in the data sub-folder.
+
+```{r}
+#| eval: false
+
+write_rds(nga_wp, "data2/nga_wp.rds")
+```
+
+### 2.2.10 Assigning EPSG code to the simple feature data frame
+
+One of the common issue that can happen during importing geospatial data into R is that the coordinate system of the source data was either missing (such as due to missing .proj for ESRI shapefile) or wrongly assigned during the importing process.
+
+Using the code chunk below, we will examine the current coordinate system of `nga_wp` simple feature data frame by using *st_crs()* of *sf* package.
+
+```{r}
+#| eval: false
+
+st_crs(nga_wp)
+```
+
+*Observation: Although `the nga_wp`data frame is projected in WGS84 but when we read until the end of the print, it indicates that the EPSG is 4326. This is a wrong EPSG code because the correct EPSG code for WGS84 should be either 26391, 26392, or 26303*
+
+Using the code below, *st_transform()* of **sf** package is used to assign the correct EPSG code (which we will select 26391) to `nga_wp` data frame.
+
+```{r}
+#| eval: false
+
+nga_wp26391 <- st_transform(nga_wp,
+                            crs = 26391)
+```
+
+Using the code chunk below, we will check the CRS again.
+
+```{r}
+#| eval: false
+
+st_crs(nga_wp26391)
+```
+
+Next, write_rds() of readr package is used to save the extracted sf data table into an output file in rds data format, and saved in the data sub-folder.
+
+```{r}
+#| eval: false
+
+write_rds(nga_wp26391, "data2/nga_wp26391.rds")
+```
+
+# 3. Exploratory Data Analysis (EDA)
+
+## 3.1 EDA using statistical graphics
+
+In the code chunk below, we plot the distribution of the variables (e.g. Number of water points with hand pumps). Histogram is useful to identify the overall distribution of the data values (i.e. left skew, right skew or normal distribution)
+
+```{r}
+nga_wp <- read_rds("data2/nga_wp.rds")
+```
+
+```{r}
+wpf <- ggplot(data=nga_wp, 
+       aes(x=`wpt functional`)) +
+  geom_histogram(bins=20, 
+                 color="black", 
+                 fill="light blue")
+
+pcf <- ggplot(data=nga_wp, 
+       aes(x=`pct_functional`)) +
+  geom_histogram(bins=20, 
+                 color="black", 
+                 fill="light blue")
+
+wpnf <- ggplot(data=nga_wp, 
+       aes(x=`wpt non-functional`)) +
+  geom_histogram(bins=20, 
+                 color="black", 
+                 fill="light blue")
+
+pcnf <- ggplot(data=nga_wp, 
+       aes(x=`pct_non-functional`)) +
+  geom_histogram(bins=20, 
+                 color="black", 
+                 fill="light blue")
+
+pchp <- ggplot(data=nga_wp, 
+       aes(x=`pct_handpump`)) +
+  geom_histogram(bins=20, 
+                 color="black", 
+                 fill="light blue")
+
+pcmp <- ggplot(data=nga_wp, 
+       aes(x=`pct_mechpump`)) +
+  geom_histogram(bins=20, 
+                 color="black", 
+                 fill="light blue")
+
+pcu1l <- ggplot(data=nga_wp, 
+       aes(x=`pct_usage1000less`)) +
+  geom_histogram(bins=20, 
+                 color="black", 
+                 fill="light blue")
+
+pcu1m <- ggplot(data=nga_wp, 
+       aes(x=`pct_usage1000more`)) +
+  geom_histogram(bins=20, 
+                 color="black", 
+                 fill="light blue")
+
+pcu <- ggplot(data=nga_wp, 
+       aes(x=`pct_rural`)) +
+  geom_histogram(bins=20, 
+                 color="black", 
+                 fill="light blue")
+```
+
+```{r}
+#| fig.width: 10
+#| fig.height: 15
+
+ggarrange(wpf, pcf, wpnf, pcnf, pchp, pcmp, pcu1l, pcu1m, pcu, 
+          ncol = 2, 
+          nrow = 5)
+```
+
+## 3.2 EDA using a choropleth map
+
+# 4. Correlation Analysis
+
+XXX
+
+# 5. Hierarchy Cluster Analysis
+
+## 5.1 Extracting clustering variables
+
+In the code chunk below, XXX.
+
+```{r}
+
+```
+
+## 5.2 Data Standardisation
+
+In the code chunk below, XXX
+
+Now that we have latitude and longitude, we use cbind to put longitude and latitude into the same object.
+
+Checking the first few observations to see if things are formatted correctl
+
+### 5.2.1 Min-Max Standardisation
+
+In the code chunk below,
+
+```{r}
+
+```
+
+# 6. Spatially Contrained Clustering: Skater Approach
+
+XXX\.
+
+## 6.1 Converting into SpatialPolygonsDataFrame
+
+XXX
+
+```{r}
+
+```
+
+## 6.2 Computing neighbour list
+
+Using the code chunk below, .
+
+```{r}
+
+```
+
+## 6.3 Computing minimum spanning tree
+
+### 6.3.1 Calculating edge costs
+
+Using the code chunk below, we will .
+
+```{r}
+
+```
+
+## 6.4 Computing minimum spanning tree
+
+Using the code chunk below, we will
+
+```{r}
+
+```
+
+#### 
+
+## 6.5 Computing spatially constrained clusters using SKATER method
+
+Using the code chunk below, we can .
+
+```{r}
+
+```
+
+Next, we will .
+
+```{r}
+
+```
+
+## 6.6 Visualising the clusters in choropleth map
+
+Using the code chunk below,
+
+```{r}
+
+```
+
+# 7. Spatially Constrained Clustering: ClustGeo Method
+
+## 7.1 Ward-like hierarchical clustering: ClustGeo
+
+Using the code chunk below,
+
+```{r}
+
+
+```
+
+Using the code chunk below, we will .
+
+```{r}
+
+```
+
+## 7.1.1 Mapping the clusters formed
+
+Next, we will
+
+```{r}
+
+```
+
+With the
+
+```{r}
+```
+
+Using the code chunk below, we will
+
+```{r}
+```
+
+Using the code chunk below,
+
+```{r}
+
+```
+
+## 7.2 Spatially constrained hierarchical clustering
+
+Using the code chunk below, we will
+
+```{r}
+
+```
+
+Using the code chunk below, we will
+
+```{r}
+
+```
+
+In the code chunk below,
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+# 8. Visual Interpretation of Clusters
+
+XXX
+
+## 8.1 Visualising individual clustering variables
+
+Using the code chunk below, we will
+
+```{r}
+
+```
+
+Using the code chunk below, we will
+
+```{r}
+
+```
+
+### 
+
+```{r}
+
+```
+
+## 8.2 Multivariate visualisation
+
+Using the code chunks below, we will plot
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+```
+
+```{}
+```
+
+# 

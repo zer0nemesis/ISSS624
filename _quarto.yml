@@ -17,14 +17,16 @@ website:
           href: Hands-On_Ex/Hands-On_Ex2/Hands-On_Ex2.qmd
         - text: Geographical Segmentation with Spatially Constrained Clustering Techniques [5]
           href: Hands-On_Ex/Hands-On_Ex3/Hands-On_Ex3.qmd
+        - text: Calibrating Hedonic Pricing Model for Private Highrise Property with GWR Method [6]
+          href: Hands-On_Ex/Hands-On_Ex4/Hands-On_Ex4.qmd
           
           
     - text: Take Home Exercises
       menu:
         - text: Take Home Exercise1
-          href: Take-Home_Ex/Take-Home_Ex1.qmd
+          href: Take-Home_Ex1/Take-Home_Ex1.qmd
         - text: Take Home Exercise2
-          href: Take-Home_Ex/Take-Home_Ex2.qmd
+          href: Take-Home_Ex2/Take-Home_Ex2.qmd
         
     right:
       - href: index.qmd

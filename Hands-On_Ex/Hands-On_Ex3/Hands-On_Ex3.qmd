@@ -811,6 +811,7 @@ rect.hclust(nongeo_cluster,
 Note that the dissimilarity matrix must be an object of class `dist`, i.e. an object obtained with the function `dist()`. For sample code chunk, please refer to Section 6.4.
 
 ### 
+
 8.1.1 Mapping the clusters formed
 
 Similarly, we can plot the clusters on a categorical area shaded map by using the steps we learned in Section 6.10.
