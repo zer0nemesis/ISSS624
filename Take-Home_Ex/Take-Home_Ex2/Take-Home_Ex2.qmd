@@ -109,6 +109,8 @@ nga <- st_read(dsn = "data2",
                  crs = 4326)
 ```
 
+![](data2/screenshot%201.jpg)
+
 ## 2.2 Data Wrangling
 
 ### 2.2.1 Removing duplicated names (if any)
@@ -126,6 +128,8 @@ duplicated_area <- nga$HRname[nga$HRname %in%
 duplicated_area
 ```
 
+![](data2/screenshot%202.jpg)
+
 From the above results, we identified 12 HRnames that are duplicates.
 
 Using the code chunk below, we will find out the index numbers of these duplicated values so that we can update the names subsequently.
@@ -135,6 +139,8 @@ Using the code chunk below, we will find out the index numbers of these duplicat
 
 which(nga$HRname %in% c("Bassa", "Ifelodun", "Irepodun", "Nasarawa", "Obi", "Surulere"))
 ```
+
+![](data2/screenshot%203.jpg)
 
 Using the code chunk below, we will access the individual index of the Nigeria data frame and differentiate these 12 HRnames by including their state name (*captured in ADM_1 Name*) e.g. Bassa(Kogi). We will also use the length() function to ensure that all duplicates are eliminated.
 
@@ -170,6 +176,8 @@ freq(data = wp_nga,
      input = "status_cle")
 ```
 
+![](data2/screenshot%204.jpg)
+
 ### 2.2.4 Extracting functional water point
 
 In the code chunk below, filter() of dplyr is used to select functional water points.
@@ -190,6 +198,8 @@ wpt_functional <- wp_nga %>%
 freq(data= wpt_functional,
      input = "status_cle")
 ```
+
+![](data2/screenshot%205.jpg)
 
 ### 2.2.5 Extracting non-functional water point
 
@@ -214,6 +224,8 @@ freq(data = wpt_nonfunctional,
      input = "status_cle")
 ```
 
+![](data2/screenshot%206.jpg)
+
 ### 2.2.6 Extracting main water point technology
 
 In the code chunks below, freq() of funModeling package is used to display the distribution of water technologies (i.e. *water_te_2* field) in *wp_nga*.
@@ -221,6 +233,8 @@ In the code chunks below, freq() of funModeling package is used to display the d
 In the code chunk below, filter() of dplyr is used to select water points whose main technology is hand pumps.
 
 ```{r}
+#| eval: false
+
 wp_nga <- wp_nga[order(wp_nga$water_te_2), ]
 
 water_tech <- unique(wp_nga$water_te_2)
@@ -228,10 +242,16 @@ water_tech <- unique(wp_nga$water_te_2)
 water_tech
 ```
 
+![](data2/screenshot%207.jpg)
+
 ```{r}
+#| eval: false
+
 freq(data = wp_nga,
      input = "water_te_2")
 ```
+
+![](data2/screenshot%208.jpg)
 
 ```{r}
 #| eval: false
@@ -247,11 +267,15 @@ wpt_handpump <- wp_nga %>%
 ```
 
 ```{r}
+#| eval: false
 freq(data = wpt_handpump,
      input = "water_te_2")
 ```
 
+![](data2/screenshot%209.jpg)
+
 ```{r}
+#| eval: false
 wpt_mechpump <- wp_nga %>%
   filter(water_te_2 %in%
            c("Mechanized Pump",
@@ -260,11 +284,15 @@ wpt_mechpump <- wp_nga %>%
 ```
 
 ```{r}
+#| eval: false
 freq(data = wpt_mechpump,
      input = "water_te_2")
 ```
 
+![](data2/screenshot%2010.jpg)
+
 ```{r}
+#| eval: false
 wpt_misc <- wp_nga %>%
   filter(water_te_2 %in%
            c("Rope and Bucket",
@@ -272,9 +300,12 @@ wpt_misc <- wp_nga %>%
 ```
 
 ```{r}
+#| eval: false
 freq(data = wpt_misc,
      input = "water_te_2")
 ```
+
+![](data2/screenshot%2011.jpg)
 
 ### 2.2.7 Extracting usage capacity
 
@@ -291,25 +322,27 @@ wpt_usage1000more <- wp_nga %>%
 ```
 
 ```{r}
+#| eval: false
 freq(data = wpt_usage1000less,
      input = "usage_cap")
 ```
 
-```{r}
-freq(data = wpt_usage1000more,
-     input = "usage_cap")
-```
+![](data2/screenshot%2012.jpg)
 
 ### 2.2.7 Extracting rural water points
 
 In the code chunk below, filter() of dplyr is used to select rural water points.
 
 ```{r}
+#| eval: false
 freq(data = wp_nga,
      input = "is_urban")
 ```
 
+![](data2/screenshot%2013.jpg)
+
 ```{r}
+#| eval: false
 wpt_rural <- wp_nga %>%
   filter(is_urban == FALSE)
 
@@ -324,6 +357,7 @@ Although *wp_nga* sf data frame consists of a field called *#clean_adm2* which b
 In this section, we are going to use a geoprocessing function (or commonly know as GIS analysis) called **point-in-polygon overlay** to transfer the attribute information in *nga* sf data frame into *wp_sf* data frame.
 
 ```{r}
+#| eval: false
 wp_nga <- st_join(wp_nga, nga)
 ```
 
@@ -392,6 +426,8 @@ Using the code chunk below, we will examine the current coordinate system of `ng
 st_crs(nga_wp)
 ```
 
+![](data2/screenshot%2014.jpg)
+
 *Observation: Although `the nga_wp`data frame is projected in WGS84 but when we read until the end of the print, it indicates that the EPSG is 4326. This is a wrong EPSG code because the correct EPSG code for WGS84 should be either 26391, 26392, or 26303*
 
 Using the code below, *st_transform()* of **sf** package is used to assign the correct EPSG code (which we will select 26391) to `nga_wp` data frame.
@@ -410,6 +446,8 @@ Using the code chunk below, we will check the CRS again.
 
 st_crs(nga_wp26391)
 ```
+
+![](data2/screenshot%2015.jpg)
 
 Next, write_rds() of readr package is used to save the extracted sf data table into an output file in rds data format, and saved in the data sub-folder.
 
@@ -698,9 +736,6 @@ Using the code chunks below, we will plot
 ```
 
 ```{r}
-```
-
-```{}
 ```
 
 # 
