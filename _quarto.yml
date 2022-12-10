@@ -19,7 +19,8 @@ website:
           href: Hands-On_Ex/Hands-On_Ex3/Hands-On_Ex3.qmd
         - text: Calibrating Hedonic Pricing Model for Private Highrise Property with GWR Method [6]
           href: Hands-On_Ex/Hands-On_Ex4/Hands-On_Ex4.qmd
-          
+        - text: In-Class Ex on Calibrating Hedonic Pricing Model for Private Highrise Property with GWR Method
+          href: Hands-On_Ex/Hands-On_Ex4/In-Class_Ex4.qmd          
           
     - text: Take Home Exercises
       menu:
