@@ -892,6 +892,8 @@ The boxplot above reveals that Cluster 3 displays the highest mean Radio Ownersh
 Past studies have shown that parallel coordinate plot can be used to reveal clustering variables by cluster very effectively. In the code chunk below, [`ggparcoord()`](https://ggobi.github.io/ggally/reference/ggparcoord.html) of [**GGally**](https://ggobi.github.io/ggally/) package is used to display multiple parallel coordinates plots by clusters.
 
 ```{r}
+#| fig-width: 30
+#| fig-height: 10
 ggparcoord(data = shan_sf_ngeo_cluster, 
            columns = c(17:21), 
            scale = "globalminmax",
