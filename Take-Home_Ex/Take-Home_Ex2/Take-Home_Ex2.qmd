@@ -67,7 +67,7 @@ In the code chunk below, p_load(0 of pacman package is used to load the followin
     -   **ClustGeo**
 
 ```{r}
-pacman::p_load(rgdal, spdep, tmap, sf, ggpubr, cluster, factoextra, NbClust, heatmaply, corrplot, psych, tidyverse, funModeling)
+pacman::p_load(rgdal, spdep, tmap, sf, ggpubr, cluster, factoextra, NbClust, heatmaply, corrplot, psych, tidyverse, funModeling, ClustGeo, GGally)
 ```
 
 # 2. Data Acquisition
@@ -528,7 +528,7 @@ pcu <- ggplot(data=nga_wp,
 ```
 
 ```{r}
-#| fig.width: 10
+#| fig.width : 10
 #| fig.height: 15
 
 ggarrange(wpf, pcf, wpnf, pcnf, pchp, pcmp, pcu1l, pcu1m, pcu, 
@@ -642,6 +642,9 @@ Beside reviewing the summary statistics of the standardised clustering variables
 The code chunks below plot the scaled *wpt functional, wpt non-functional* fields. The remaining variables (e.g. pct_handpump) need not be plotted since their existing values already range from 0 to 1.
 
 ```{r}
+#| fig-width: 10
+#| fig-height: 20
+
 a <- ggplot(data=nga_wp_derived, 
              aes(x= `wpt functional`)) +
   geom_histogram(bins=20, 
@@ -716,178 +719,436 @@ Using the code chunk below, we can then plot the tree using plot() of R Graphics
 plot(hclust_ward, cex = 0.6)
 ```
 
+## 5.6 Selecting the optimal clustering algorithm
+
+One of the challenge in performing hierarchical clustering is to identify stronger clustering structures. The issue can be solved by using use [*agnes()*](https://www.rdocumentation.org/packages/cluster/versions/2.1.0/topics/agnes) function of [**cluster**](https://cran.r-project.org/web/packages/cluster/) package. We can get the agglomerative coefficient, which measures the amount of clustering structure found (values closer to 1 suggest strong clustering structure).
+
+Using the code chunk below, we will compute the agglomerative coefficients of all hierarchical clustering algorithms.
+
+```{r}
+m <- c( "average", "single", "complete", "ward")
+names(m) <- c( "average", "single", "complete", "ward")
+
+ac <- function(x) {
+  agnes(nga_wp_pct, method = x)$ac
+}
+
+map_dbl(m, ac)
+```
+
+From the output above, we can see that Ward's method provides the strongest clustering structure among the four methods assessed. Hence, in the subsequent analysis, only Ward's method will be used.
+
+## 5.7 Determining optimal clusters
+
+To determine the optimal clusters to retain, we will use one of [three](https://statweb.stanford.edu/~gwalther/gap) commonly used methods to determine the optimal clusters, they are:
+
+-   [Elbow Method](https://en.wikipedia.org/wiki/Elbow_method_(clustering))
+
+-   [Average Silhouette Method](https://www.sciencedirect.com/science/article/pii/0377042787901257?via%3Dihub)
+
+-   [Gap Statistic Method](http://www.web.stanford.edu/~hastie/Papers/gap.pdf)
+
+### 5.7.1 Gap statistic method
+
+The **gap statistic** compares the total within intra-cluster variation for different values of k with their expected values under null reference distribution of the data. The estimate of the optimal clusters will be value that maximize the gap statistic (i.e., that yields the largest gap statistic). This means that the clustering structure is far away from the random uniform distribution of points.
+
+To compute the gap statistic, [*clusGap()*](https://www.rdocumentation.org/packages/cluster/versions/2.1.0/topics/clusGap) of [**cluster**](https://cran.r-project.org/web/packages/cluster/) package will be used. Also note that the [*hcut*](https://rpkgs.datanovia.com/factoextra/reference/hcut.html) function used is from [**factoextra**](https://rpkgs.datanovia.com/factoextra/) package.
+
+```{r}
+set.seed(12345)
+gap_stat <- clusGap(nga_wp_pct, 
+                    FUN = hcut, 
+                    nstart = 25, 
+                    K.max = 10, 
+                    B = 50)
+# Print the result
+print(gap_stat, method = "firstmax")
+```
+
+Next, we can visualise the plot by using [*fviz_gap_stat()*](https://rpkgs.datanovia.com/factoextra/reference/fviz_nbclust.html) of [**factoextra**](https://rpkgs.datanovia.com/factoextra/) package.
+
+```{r}
+fviz_gap_stat(gap_stat)
+```
+
+With reference to the gap statistic graph above, the recommended number of cluster to retain is 1. However, it is not logical to retain only one cluster. By examine the gap statistic graph, the 4-cluster gives the largest gap statistic and should be the next best cluster to pick.
+
+## 5.8 Interpreting the dendograms
+
+In the dendrogram displayed above, each leaf corresponds to one observation. As we move up the tree, observations that are similar to each other are combined into branches, which are themselves fused at a higher height.
+
+The height of the fusion, provided on the vertical axis, indicates the (dis)similarity between two observations. The higher the height of the fusion, the less similar the observations are. Note that, conclusions about the proximity of two observations can be drawn only based on the height where branches containing those two observations first are fused. We cannot use the proximity of two observations along the horizontal axis as a criteria of their similarity.
+
+It's also possible to draw the dendrogram with a border around the selected clusters by using [*rect.hclust()*](https://stat.ethz.ch/R-manual/R-devel/library/stats/html/rect.hclust.html) of R stats. The argument *border* is used to specify the border colors for the rectangles.
+
+```{r}
+plot(hclust_ward, cex = 0.6)
+rect.hclust(hclust_ward, 
+            k = 4, 
+            border = 2:5)
+```
+
+## 5.9 Visually-driven hierarchical clustering analysis
+
+In this section, we will perform visually-driven hiearchical clustering analysis by using [*heatmaply*](https://cran.r-project.org/web/packages/heatmaply/) package.
+
+With **heatmaply**, we are able to build both highly interactive cluster heatmap or static cluster heatmap.
+
+### 5.8.1 Transforming the data frame into a matrix
+
+The data was loaded into a data frame, but it has to be a data matrix to make your heatmap. Using the code chunk below, we will transform *nga_wp_pct* data frame into a data matrix.
+
+```{r}
+nga_wp_pct_mat <- data.matrix(nga_wp_pct)
+```
+
+### 5.8.2 Plotting interactive cluster heatmap using heatmaply()
+
+Using the code chunk below, the [*heatmaply()*](https://talgalili.github.io/heatmaply/reference/heatmaply.html) of [heatmaply](https://talgalili.github.io/heatmaply/) package is used to build an interactive cluster heatmap.
+
+```{r}
+#|fig-height: 20
+
+heatmaply(normalize(nga_wp_pct_mat),
+          Colv=NA,
+          dist_method = "euclidean",
+          hclust_method = "ward.D",
+          seriate = "OLO",
+          colors = Blues,
+          k_row = 64,
+          margins = c(NA,200,60,NA),
+          fontsize_row = 4,
+          fontsize_col = 5,
+          main="Geographic Segmentation of Nigeria by Water Tech indicators",
+          xlab = "Water Technolgy Indicators",
+          ylab = "Townships of Nigeria"
+          )
+```
+
+## 5.9 Mapping the clusters formed
+
+With closed examination of the dendragram above, we will retain the 4 clusters. Using the code chunk below, we will derive a 4-cluster model using cutree() of Base R.
+
+```{r}
+groups <- as.factor(cutree(hclust_ward, k=4))
+```
+
+The output from the code chunk above is called groups. As it is a list object, in order to visualise the clusters, the groups object need to be appended onto the nga_wp sf object.
+
+Using the code chunk below, we will:
+
+-   convert the groups list object into a matrix;
+
+-   append groups matrix onto nga_wp using cbind() to produce an output simple feature object called nga_wp_cluster; and
+
+-   rename as.matrix.groups. field as CLUSTER using rename() of dpylr package
+
+```{r}
+nga_wp_cluster <- cbind(nga_wp, as.matrix(groups))%>%
+  rename(`CLUSTER` = `as.matrix.groups.`)
+```
+
+Using the code chunk below, we will next plot the choropleth map showing the cluster formed using qtm() of tmap package.
+
+```{r}
+qtm(nga_wp_cluster, "CLUSTER")
+```
+
+The choropleth map above reveals the clusters are very fragmented. This is one of the major limitationa when non-spatial clustering algorithm such as hierarchical cluster analysis method is used.
+
 # 6. Spatially Contrained Clustering: Skater Approach
 
-XXX\.
+In this section, we will derive spatially constrained cluster by using [*skater()*](https://r-spatial.github.io/spdep/reference/skater.html) method of [**spdep**](https://r-spatial.github.io/spdep/) package.
 
 ## 6.1 Converting into SpatialPolygonsDataFrame
 
-XXX
+First, we need to convert `nga_wp` into SpatialPolygonsDataFrame. This is because SKATER function only support **sp** objects such as SpatialPolygonDataFrame.
+
+The code chunk below uses [*as_Spatial()*](https://r-spatial.github.io/sf/reference/coerce-methods.html) of **sf** package to convert *nga_wp* into a SpatialPolygonDataFrame called *nga_wp_sp*.
 
 ```{r}
-
+nga_wp_sp <- as_Spatial(nga_wp)
 ```
 
 ## 6.2 Computing neighbour list
 
-Using the code chunk below, .
+Using the code chunk below, we will use [poly2nd()](https://r-spatial.github.io/spdep/reference/poly2nb.html) of **spdep** package to compute the neighbours list from polygon list.
 
 ```{r}
-
+nga_wp.nb <- poly2nb(nga_wp_sp)
+summary(nga_wp.nb)
 ```
+
+We can plot the neighbours list on nga_wp_sp by using the code chunk below. Since we now can plot the community area boundaries as well, we plot this graph on top of the map. The first plot command gives the boundaries. This is followed by the plot of the neighbor list object, with coordinates applied to the original SpatialPolygonDataFrame (Nigeria state township boundaries) to extract the centroids of the polygons. These are used as the nodes for the graph representation. We also set the color to blue and specify add=TRUE to plot the network on top of the boundaries.
+
+```{r}
+#| fig-width: 30
+#| fig-height: 30
+
+plot(nga_wp_sp, 
+     border=grey(.5))
+plot(nga_wp.nb, 
+     coordinates(nga_wp_sp), 
+     col="blue", 
+     add=TRUE)
+```
+
+Note that if we plot the network first and then the boundaries, some of the areas will be clipped. This is because the plotting area is determined by the characteristics of the first plot. In this example, because the boundary map extends further than the graph, we plot it first.
 
 ## 6.3 Computing minimum spanning tree
 
 ### 6.3.1 Calculating edge costs
 
-Using the code chunk below, we will .
+Using the code chunk below, we will compute the cost of each edge, using [*nbcosts()*](https://r-spatial.github.io/spdep/reference/nbcosts.html) of **spdep** package. It is the distance between each node. This function compute this distance using a data.frame with observations vector in each node
 
 ```{r}
+lcosts <- nbcosts(nga_wp.nb, nga_wp_pct)
+```
 
+For each observation, this gives the pairwise dissimilarity between its values on the five variables and the values for the neighbouring observation (from the neighbour list). Basically, this is the notion of a generalised weight for a spatial weights matrix.
+
+Next, We will incorporate these costs into a weights object in the same way as we did in the calculation of inverse of distance weights. In other words, we convert the neighbour list to a list weights object by specifying the just computed ***lcosts*** as the weights.
+
+In order to achieve this, [*nb2listw()*](https://r-spatial.github.io/spdep/reference/nb2listw.html) of **spdep** package is used as shown in the code chunk below.
+
+Note that we specify the *style* as **B** to make sure the cost values are not row-standardised.
+
+```{r}
+nga_wp.w <- nb2listw(nga_wp.nb, 
+                   lcosts, 
+                   style="B")
+summary(nga_wp.w)
 ```
 
 ## 6.4 Computing minimum spanning tree
 
-Using the code chunk below, we will
+Using the code chunk below, we will compute the minimum spanning tree by the mean of the [*mstree()*](https://r-spatial.github.io/spdep/reference/mstree.html) of **spdep** package
 
 ```{r}
-
+nga_wp.mst <- mstree(nga_wp.w)
 ```
 
-#### 
+After computing the MST, we can check its class and dimension by using the code chunk below.
+
+```{r}
+class(nga_wp.mst)
+```
+
+```{r}
+dim(nga_wp.mst)
+```
+
+Note that the dimension is 772 and not 773. This is because the minimum spanning tree consists on n-1 edges (links) in order to traverse all the nodes.
+
+Using the code chunk below, we can display the content of *nga_wp.mst* by using *head()* .
+
+```{r}
+head(nga_wp.mst)
+```
+
+The plot method for the MST include a way to show the observation numbers of the nodes in addition to the edge. As before, we plot this together with the township boundaries. We can see how the initial neighbour list is simplified to just one edge connecting each of the nodes, while passing through all the nodes.
+
+```{r}
+#| fig-width: 30
+#| fig-height: 30
+
+plot(nga_wp_sp, border=gray(.5))
+plot.mst(nga_wp.mst, 
+         coordinates(nga_wp_sp), 
+         col="blue", 
+         cex.lab=0.2, 
+         cex.circles=0.0005, 
+         add=TRUE)
+```
 
 ## 6.5 Computing spatially constrained clusters using SKATER method
 
-Using the code chunk below, we can .
+Using the code chunk below, we can compute the spatially constrained cluster using [*skater()*](https://r-spatial.github.io/spdep/reference/skater.html) of **spdep** package.
 
 ```{r}
-
+clust4 <- spdep::skater(edges = nga_wp.mst[,1:2], 
+                 data = nga_wp_pct, 
+                 method = "euclidean", 
+                 ncuts = 3)
 ```
 
-Next, we will .
+The *skater()* takes three mandatory arguments: - the first two columns of the MST matrix (i.e. not the cost), - the data matrix (to update the costs as units are being grouped), and - the number of cuts. Note: It is set to **one less than the number of clusters**. So, the value specified is **not** the number of clusters, but the number of cuts in the graph, one less than the number of clusters. The result of the *skater()* is an object of class **skater**.
+
+Next, we will examine its contents by using the code chunk below.
 
 ```{r}
+str(clust4)
+```
 
+The most interesting component of this list structure is the groups vector containing the labels of the cluster to which each observation belongs (as before, the label itself is arbitary). This is followed by a detailed summary for each of the clusters in the edges.groups list. Sum of squares measures are given as ssto for the total and ssw to show the effect of each of the cuts on the overall criterion.
+
+We can check the cluster assignment by using the code chunk below.
+
+```{r}
+ccs4 <- clust4$groups
+ccs4
+```
+
+We can find out how many observations are in each cluster by means of the table command. Parenthetially, we can also find this as the dimension of each vector in the lists contained in edges.groups. For example, the first list has node with dimension 8, which is also the number of observations in the first cluster.
+
+```{r}
+table(ccs4)
+```
+
+Lastly, we can also plot the pruned tree that shows the four clusters on top of the townshop area.
+
+```{r}
+#| fig-width: 30
+#| fig-height: 30
+
+plot(nga_wp_sp, border=gray(.5))
+plot(clust4, 
+     coordinates(nga_wp_sp), 
+     cex.lab=.2,
+     groups.colors=c("red","green","blue", "pink"),
+     cex.circles=0.0005, 
+     add=TRUE)
 ```
 
 ## 6.6 Visualising the clusters in choropleth map
 
-Using the code chunk below,
+Using the code chunk below, we will plot the newly derived clusters by using SKATER method
 
 ```{r}
+groups_mat <- as.matrix(clust4$groups)
+nga_wp_spatialcluster <- cbind(nga_wp_cluster, as.factor(groups_mat)) %>%
+  rename(`SP_CLUSTER`=`as.factor.groups_mat.`)
+qtm(nga_wp_spatialcluster, "SP_CLUSTER")
+```
 
+For easy comparison, it will be better to place both the hierarchical clustering and spatially constrained hierarchical clustering maps next to each other.
+
+```{r}
+hclust.map <- qtm(nga_wp_cluster,
+                  "CLUSTER") + 
+  tm_borders(alpha = 0.5) 
+
+shclust.map <- qtm(nga_wp_spatialcluster,
+                   "SP_CLUSTER") + 
+  tm_borders(alpha = 0.5) 
+
+tmap_arrange(hclust.map, shclust.map,
+             asp=NA, ncol=2)
 ```
 
 # 7. Spatially Constrained Clustering: ClustGeo Method
 
+In this section, we will use functions provided by **ClustGeo** package to perform non-spatially constrained hierarchical cluster analysis and spatially constrained cluster analysis
+
 ## 7.1 Ward-like hierarchical clustering: ClustGeo
 
-Using the code chunk below,
+ClustGeo package provides function called `hclustgeo()` to perform a typical Ward-like hierarchical clustering just like `hclust()`.
+
+To perform non-spatially constrained hierarchical clustering, we only need to provide the function a dissimilarity matrix as shown in the code chunk below.
 
 ```{r}
-
-
-```
-
-Using the code chunk below, we will .
-
-```{r}
-
+nongeo_cluster <- hclustgeo(proxmat)
+plot(nongeo_cluster, cex = 0.5)
+rect.hclust(nongeo_cluster, 
+            k = 4, 
+            border = 2:5)
 ```
 
 ## 7.1.1 Mapping the clusters formed
 
-Next, we will
+Next, we will plot the clusters on a categorical area shaded map by using similar steps in section 5.9.
 
 ```{r}
-
+groups <- as.factor(cutree(nongeo_cluster, k=4))
 ```
 
-With the
-
 ```{r}
+nga_wp_ngeo_cluster <- cbind(nga_wp, as.matrix(groups)) %>%
+  rename(`CLUSTER` = `as.matrix.groups.`)
 ```
 
-Using the code chunk below, we will
-
 ```{r}
-```
-
-Using the code chunk below,
-
-```{r}
-
+qtm(nga_wp_ngeo_cluster, "CLUSTER")
 ```
 
 ## 7.2 Spatially constrained hierarchical clustering
 
-Using the code chunk below, we will
+Using the code chunk below, we will derive the spatial distance matrix using [`st_distance()`](https://r-spatial.github.io/sf/reference/geos_measures.html) of sf package, before performing the spatially constrained hierarchical clustering.
 
 ```{r}
-
+dist <- st_distance(nga_wp, nga_wp)
+distmat <- as.dist(dist)
 ```
 
-Using the code chunk below, we will
+Notice that `as.dist()` is used to convert the data frame into matrix.
+
+Next, `choicealpha()` will be used to determine a suitable value for the mixing parameter alpha as shown in the code chunk below.
 
 ```{r}
-
+cr <- choicealpha(proxmat, distmat, range.alpha = seq(0, 1, 0.1), K=4, graph = TRUE)
 ```
 
-In the code chunk below,
+With reference to the graphs above, in the code chunk below, alpha = 0.2 will be used.
 
 ```{r}
-
+clustG <- hclustgeo(proxmat, distmat, alpha = 0.2)
 ```
+
+Next, `cutree()` is used to derive the cluster object.
 
 ```{r}
-
+groups <- as.factor(cutree(clustG, k=4))
 ```
+
+Using the code chunk below, we will then join back the group list with *nga_wp* polygon feature data frame.
 
 ```{r}
-
+nga_wp_Gcluster <- cbind(nga_wp, as.matrix(groups)) %>%
+  rename(`CLUSTER` = `as.matrix.groups.`)
 ```
+
+We can now plot the map of the newly delineated spatially constrained clusters.
 
 ```{r}
-
+qtm(nga_wp_Gcluster, "CLUSTER")
 ```
 
-# 8. Visual Interpretation of Clusters
-
-XXX
+# 8. Visual Interpretation of Cluster
 
 ## 8.1 Visualising individual clustering variables
 
-Using the code chunk below, we will
+Using the code chunk below, we will reveal the distribution of two clustering variables (i.e wpt functional, wpt non-functional) by cluster.
 
 ```{r}
+w <- ggplot(data = nga_wp_ngeo_cluster,
+       aes(x = CLUSTER, y = `wpt.functional`)) +
+  geom_boxplot()
 
+y <- ggplot(data = nga_wp_ngeo_cluster,
+       aes(x = CLUSTER, y = `wpt.non.functional`)) +
+  geom_boxplot()
+
+ggarrange(w, y,
+          ncol = 2,
+          nrow = 1)
 ```
 
-Using the code chunk below, we will
-
-```{r}
-
-```
-
-### 
-
-```{r}
-
-```
+The boxplots reveal that Cluster X displays the highest mean wpt_functional, while Cluster Y displays the highest mean wpt_non-functional.
 
 ## 8.2 Multivariate visualisation
 
-Using the code chunks below, we will plot
+Using the code chunks below, we will display parallel coordinate plots to reveal clustering variables by cluster. using [`ggparcoord()`](https://ggobi.github.io/ggally/reference/ggparcoord.html) of [**GGally**](https://ggobi.github.io/ggally/) package.
 
 ```{r}
+#| fig-width: 30
+#| fig-height: 20
 
+ggparcoord(data = nga_wp_ngeo_cluster, 
+           columns = c(14:15, 21:27), 
+           scale = "globalminmax",
+           alphaLines = 0.2,
+           boxplot = TRUE, 
+           title = "Multiple Parallel Coordinates Plots of Water Tech Variables by Cluster") +
+  facet_grid(~ CLUSTER) + 
+  theme(axis.text.x = element_text(angle = 30))
 ```
-
-```{r}
-
-```
-
-```{r}
-```
-
-# 
