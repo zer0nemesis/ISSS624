@@ -539,7 +539,7 @@ pcu <- ggplot(data=nga_wp,
 ```
 
 ```{r}
-#| fig-height: 30
+#| fig-height: 20
 
 ggarrange(wpf, pcf, wpnf, pcnf, pchp, pcmp, pcu1l, pcu1m, pcu, 
           ncol = 2, 
@@ -571,7 +571,7 @@ tmap_arrange(wpt.functional.map, wpt.pct.map,
              asp=NA, ncol=2)
 ```
 
-Notice that the choropleth maps above clearly show that townships with relatively larger number of waterpoints are also showing relatively higher percentage of functional waterpoints.
+Notice that the choropleth maps above clearly show that townships with relatively larger number of functional waterpoints are also showing relatively higher percentage of functional waterpoints. And the maps also seem to suggest higher percentages of functional waterpoints are mainly in the Northern townships.
 
 Now let us plot the choropleth maps showing the distribution of number of non-functional waterpoints and the percentage of non-functional waterpoints using the code chunk below.
 
@@ -593,6 +593,8 @@ wpt.npct.map <- tm_shape(nga_wp) +
 tmap_arrange(wpt.nfunctional.map, wpt.npct.map,
              asp=NA, ncol=2)
 ```
+
+Notice that the choropleth maps above show that townships with relatively larger number of non-functional waterpoints may not show a relatively higher percentage of non-functional waterpoints. And the maps also seem to suggest higher percentages of non-functional waterpoints are mainly in the Southern townships.
 
 # 4. Correlation Analysis
 
@@ -698,9 +700,6 @@ Beside reviewing the summary statistics of the standardised clustering variables
 The code chunks below plot the scaled *wpt functional, wpt non-functional* fields. The remaining variables (e.g. pct_handpump) need not be plotted since their existing values already range from 0 to 1.
 
 ```{r}
-#| fig-width: 15
-#| fig-height: 10
-
 a <- ggplot(data=nga_wp_derived, 
              aes(x= `wpt functional`)) +
   geom_histogram(bins=20, 
@@ -743,11 +742,17 @@ f <- ggplot(data=nga_wp_s_df,
                  color="black", 
                  fill="light blue") +
   ggtitle("pct_handpump - Min-Max Standardisation")
+```
+
+```{r}
+#| fig-height: 20
 
 ggarrange(a, b, c, d, e, f, 
           ncol = 2,
           nrow = 4)
 ```
+
+From the histograms above, we can indeed see that there is no difference between the raw values and min-max standardised values of pct_handpump, which supports the earlier notion that there is no need to plot the remaining variables that are in percentages.
 
 ## 5.4 Computing proximity matrix
 
@@ -777,7 +782,7 @@ plot(hclust_ward, cex = 0.3)
 
 ## 5.6 Selecting the optimal clustering algorithm
 
-One of the challenge in performing hierarchical clustering is to identify stronger clustering structures. The issue can be solved by using use [*agnes()*](https://www.rdocumentation.org/packages/cluster/versions/2.1.0/topics/agnes) function of [**cluster**](https://cran.r-project.org/web/packages/cluster/) package. We can get the agglomerative coefficient, which measures the amount of clustering structure found (values closer to 1 suggest strong clustering structure).
+One of the challenge in performing hierarchical clustering is to identify stronger clustering structures. The issue can be solved by using the [*agnes()*](https://www.rdocumentation.org/packages/cluster/versions/2.1.0/topics/agnes) function of [**cluster**](https://cran.r-project.org/web/packages/cluster/) package. We can get the agglomerative coefficient, which measures the amount of clustering structure found (values closer to 1 suggest strong clustering structure).
 
 Using the code chunk below, we will compute the agglomerative coefficients of all hierarchical clustering algorithms.
 
@@ -827,7 +832,7 @@ Next, we can visualise the plot by using [*fviz_gap_stat()*](https://rpkgs.datan
 fviz_gap_stat(gap_stat)
 ```
 
-With reference to the gap statistic graph above, the recommended number of cluster to retain is 1. However, it is not logical to retain only one cluster. By examine the gap statistic graph, the 4-cluster gives the largest gap statistic and should be the next best cluster to pick.
+With reference to the gap statistic graph above, the recommended number of cluster to retain is 1. However, it is not logical to retain only one cluster. By examining the gap statistic graph, the 4-cluster gives the largest gap statistic and should be the next best cluster to pick.
 
 ## 5.8 Interpreting the dendograms
 
@@ -838,6 +843,9 @@ The height of the fusion, provided on the vertical axis, indicates the (dis)simi
 It's also possible to draw the dendrogram with a border around the selected clusters by using [*rect.hclust()*](https://stat.ethz.ch/R-manual/R-devel/library/stats/html/rect.hclust.html) of R stats. The argument *border* is used to specify the border colors for the rectangles.
 
 ```{r}
+#| fig-width: 15
+#| fig-height: 10
+
 plot(hclust_ward, cex = 0.3)
 rect.hclust(hclust_ward, 
             k = 4, 
@@ -863,7 +871,7 @@ nga_wp_pct_mat <- data.matrix(nga_wp_pct)
 Using the code chunk below, the [*heatmaply()*](https://talgalili.github.io/heatmaply/reference/heatmaply.html) of [heatmaply](https://talgalili.github.io/heatmaply/) package is used to build an interactive cluster heatmap.
 
 ```{r}
-#|fig-height: 20
+#| fig-height: 20
 
 heatmaply(normalize(nga_wp_pct_mat),
           Colv=NA,
@@ -876,14 +884,14 @@ heatmaply(normalize(nga_wp_pct_mat),
           fontsize_row = 4,
           fontsize_col = 5,
           main="Geographic Segmentation of Nigeria by Water Tech indicators",
-          xlab = "Water Technolgy Indicators",
+          xlab = "Water Technology Indicators",
           ylab = "Townships of Nigeria"
           )
 ```
 
 ## 5.9 Mapping the clusters formed
 
-With closed examination of the dendragram above, we will retain the 4 clusters. Using the code chunk below, we will derive a 4-cluster model using cutree() of Base R.
+With closed examination of the dendrogram above, we will retain the 4 clusters. Using the code chunk below, we will derive a 4-cluster model using cutree() of Base R.
 
 ```{r}
 groups <- as.factor(cutree(hclust_ward, k=4))
@@ -910,7 +918,7 @@ Using the code chunk below, we will next plot the choropleth map showing the clu
 qtm(nga_wp_cluster, "CLUSTER")
 ```
 
-The choropleth map above reveals the clusters are very fragmented. This is one of the major limitationa when non-spatial clustering algorithm such as hierarchical cluster analysis method is used.
+The choropleth map above reveals the clusters are very fragmented. This is one of the major limitations when non-spatial clustering algorithm such as hierarchical cluster analysis method is used.
 
 # 6. Spatially Contrained Clustering: Skater Approach
 
@@ -994,7 +1002,7 @@ class(nga_wp.mst)
 dim(nga_wp.mst)
 ```
 
-Note that the dimension is 772 and not 773. This is because the minimum spanning tree consists on n-1 edges (links) in order to traverse all the nodes.
+Note that the dimension is 772 and not 773. This is because the minimum spanning tree consists of n-1 edges (links) in order to traverse all the nodes.
 
 Using the code chunk below, we can display the content of *nga_wp.mst* by using *head()* .
 
@@ -1106,6 +1114,9 @@ ClustGeo package provides function called `hclustgeo()` to perform a typical War
 To perform non-spatially constrained hierarchical clustering, we only need to provide the function a dissimilarity matrix as shown in the code chunk below.
 
 ```{r}
+#| fig-width: 15
+#| fig-height: 10
+
 nongeo_cluster <- hclustgeo(proxmat)
 plot(nongeo_cluster, cex = 0.5)
 rect.hclust(nongeo_cluster, 
@@ -1196,7 +1207,7 @@ The boxplots reveal that Cluster 4 displayed the highest mean for both wpt_funct
 
 ## 8.2 Multivariate visualisation
 
-Using the code chunks below, we will display parallel coordinate plots to reveal clustering variables by cluster. using [`ggparcoord()`](https://ggobi.github.io/ggally/reference/ggparcoord.html) of [**GGally**](https://ggobi.github.io/ggally/) package.
+Using the code chunks below, we will display parallel coordinate plots to reveal clustering variables by cluster, using [`ggparcoord()`](https://ggobi.github.io/ggally/reference/ggparcoord.html) of [**GGally**](https://ggobi.github.io/ggally/) package.
 
 ```{r}
 #| fig-width: 15
@@ -1212,9 +1223,9 @@ ggparcoord(data = nga_wp_ngeo_cluster,
   theme(axis.text.x = element_text(angle = 45))
 ```
 
-The parallel coordinate plot above reveals that households in Cluster 4 townships tend to have the highest percentage of functional waterpoints, mainly handpumps and rural areas.
+The parallel coordinate plot above reveals that households in Cluster 4 townships tend to have the highest percentage of (1) functional waterpoints, (2) handpumps and (3) waterpoints located in rural areas.
 
-On the other hand, households in Cluster 1 tends to have the highest percentage of non-functional waterpoints, mainly mech pumps, and non-urban areas.
+On the other hand, households in Cluster 1 tends to have the highest percentage of (a) non-functional waterpoints, (b) mechanised pumps, and (c) waterpoints located in urban areas.
 
 Note that the `scale` argument of `ggparcoor()` provide several methods to scale the clustering variables. They are:
 
@@ -1246,6 +1257,8 @@ nga_wp_ngeo_cluster %>%
             mean_pct_usage1000less = mean(pct_usage1000less),
             mean_pct_rural = mean(pct_rural))
 ```
+
+The table above supports our earlier observations that (1) Cluster 4 has both the highest number of functional waterpoints as well the highest percentage of functional waterpoints, and these waterpoints are mainly handpumps, and are located in the rural areas; (2) on the other hand, while Cluster 1 has the lowest number of non-functional waterpoints, they have the highest percentage of non-functional waterpoints, and these waterpoints are mainly mechanised pumps, and are located in the urban areas.
 
 # 9. Acknowledgements
 
