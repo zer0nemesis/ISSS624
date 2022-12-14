@@ -1203,7 +1203,7 @@ ggarrange(w, y,
           nrow = 1)
 ```
 
-The boxplots reveal that Cluster 4 displayed the highest mean for both wpt_functional and wpt_non-functional.
+The boxplots reveal that Cluster 4 displayed the highest mean for both wpt_functional and wpt_non-functional. This is followed by Cluster 2, 3 then 1.
 
 ## 8.2 Multivariate visualisation
 

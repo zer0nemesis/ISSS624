@@ -711,7 +711,7 @@
     "href": "Take-Home_Ex/Take-Home_Ex2/Take-Home_Ex2.html#visualising-individual-clustering-variables",
     "title": "Take-Home_Ex2: Regionalisation of Multivariate Water Point Attributes with Non-spatially Constrained and Spatially Constrained Clustering Methods",
     "section": "8.1 Visualising individual clustering variables",
-    "text": "8.1 Visualising individual clustering variables\nUsing the code chunk below, we will reveal the distribution of two clustering variables (i.e wpt functional, wpt non-functional) by cluster.\n\nw <- ggplot(data = nga_wp_ngeo_cluster,\n       aes(x = CLUSTER, y = `wpt.functional`)) +\n  geom_boxplot()\n\ny <- ggplot(data = nga_wp_ngeo_cluster,\n       aes(x = CLUSTER, y = `wpt.non.functional`)) +\n  geom_boxplot()\n\nggarrange(w, y,\n          ncol = 2,\n          nrow = 1)\n\n\n\n\nThe boxplots reveal that Cluster 4 displayed the highest mean for both wpt_functional and wpt_non-functional."
+    "text": "8.1 Visualising individual clustering variables\nUsing the code chunk below, we will reveal the distribution of two clustering variables (i.e wpt functional, wpt non-functional) by cluster.\n\nw <- ggplot(data = nga_wp_ngeo_cluster,\n       aes(x = CLUSTER, y = `wpt.functional`)) +\n  geom_boxplot()\n\ny <- ggplot(data = nga_wp_ngeo_cluster,\n       aes(x = CLUSTER, y = `wpt.non.functional`)) +\n  geom_boxplot()\n\nggarrange(w, y,\n          ncol = 2,\n          nrow = 1)\n\n\n\n\nThe boxplots reveal that Cluster 4 displayed the highest mean for both wpt_functional and wpt_non-functional. This is followed by Cluster 2, 3 then 1."
   },
   {
     "objectID": "Take-Home_Ex/Take-Home_Ex2/Take-Home_Ex2.html#multivariate-visualisation",
