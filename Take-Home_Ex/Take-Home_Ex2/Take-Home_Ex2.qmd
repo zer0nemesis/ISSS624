@@ -539,6 +539,7 @@ pcu <- ggplot(data=nga_wp,
 ```
 
 ```{r}
+#| fig-height: 30
 
 ggarrange(wpf, pcf, wpnf, pcnf, pchp, pcmp, pcu1l, pcu1m, pcu, 
           ncol = 2, 
@@ -570,9 +571,7 @@ tmap_arrange(wpt.functional.map, wpt.pct.map,
              asp=NA, ncol=2)
 ```
 
-Notice that the choropleth maps above clearly show that townships
-with relatively larger number of waterpoints are also showing relatively
-higher percentage of functional waterpoints.
+Notice that the choropleth maps above clearly show that townships with relatively larger number of waterpoints are also showing relatively higher percentage of functional waterpoints.
 
 Now let us plot the choropleth maps showing the distribution of number of non-functional waterpoints and the percentage of non-functional waterpoints using the code chunk below.
 
@@ -1213,8 +1212,7 @@ ggparcoord(data = nga_wp_ngeo_cluster,
   theme(axis.text.x = element_text(angle = 45))
 ```
 
-The parallel coordinate plot above reveals that households in Cluster
-4 townships tend to have the highest percentage of functional waterpoints, mainly handpumps and rural areas.
+The parallel coordinate plot above reveals that households in Cluster 4 townships tend to have the highest percentage of functional waterpoints, mainly handpumps and rural areas.
 
 On the other hand, households in Cluster 1 tends to have the highest percentage of non-functional waterpoints, mainly mech pumps, and non-urban areas.
 
@@ -1230,8 +1228,7 @@ Note that the `scale` argument of `ggparcoor()` provide several methods to scale
 
 -   center: use uniminmax to standardize vertical height, then center each variable at a value specified by the scaleSummary param.
 
--   centerObs: use uniminmax to standardize vertical height, then center each variable at the value of the observation specified by the
-    centerObsID param
+-   centerObs: use uniminmax to standardize vertical height, then center each variable at the value of the observation specified by the centerObsID param
 
 Last but not least, we can also compute the summary statistics such as mean, median, sd, etc to complement the visual interpretation. Using the code chunk below, `group_by()` and `summarise()` of dplyr are used to derive mean values of the clustering variables.
 
@@ -1260,4 +1257,4 @@ Sincere appreciation to Prof. Kam Tin Seong for all the lecture notes,hands-on 
 
 ***Photo Credits***:
 
--   Nengi Nelson, \"Waterpreneurs\" cash in on government failure to deliver clean water to islanders
+-   Nengi Nelson, "Waterpreneurs" cash in on government failure to deliver clean water to islanders
