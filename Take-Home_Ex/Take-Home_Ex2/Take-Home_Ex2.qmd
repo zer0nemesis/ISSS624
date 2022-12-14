@@ -309,8 +309,9 @@ In the code chunks below, filter() of dplyr is used to select water points whose
 #| eval: false
 wpt_misc <- wp_nga %>%
   filter(water_te_2 %in%
-           c("Rope and Bucket",
-             "Unknown"))
+           c("Tapstand",
+           "Rope and Bucket",
+           "Unknown"))
 ```
 
 ```{r}
@@ -538,8 +539,6 @@ pcu <- ggplot(data=nga_wp,
 ```
 
 ```{r}
-#| fig.width : 10
-#| fig.height: 15
 
 ggarrange(wpf, pcf, wpnf, pcnf, pchp, pcmp, pcu1l, pcu1m, pcu, 
           ncol = 2, 
