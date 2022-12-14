@@ -1,6 +1,6 @@
 ---
-title: "Take-Home_Ex2"
-author: "Roger"
+title: "Take-Home_Ex2: Regionalisation of Multivariate Water Point Attributes with Non-spatially Constrained and Spatially Constrained Clustering Methods"
+author: "Roger Chen"
 editor: visual
 format: html
 execute: 
@@ -32,7 +32,7 @@ In this study, we will regionalise Nigeria by using, but not limited to the foll
 
 -   Percentage of non-functional water points
 
--   Percentage of main water point technology (i.e. Hand Pump)
+-   Percentage of main water point technology (i.e. Hand Pump, Mechanised Pump)
 
 -   Percentage of usage capacity (i.e. \< 1000, \>=1000)
 
@@ -65,6 +65,8 @@ In the code chunk below, p_load(0 of pacman package is used to load the followin
     -   **cluster**
 
     -   **ClustGeo**
+
+    -   GGally
 
 ```{r}
 pacman::p_load(rgdal, spdep, tmap, sf, ggpubr, cluster, factoextra, NbClust, heatmaply, corrplot, psych, tidyverse, funModeling, ClustGeo, GGally)
@@ -253,6 +255,8 @@ freq(data = wp_nga,
 
 In the code chunks below, filter() of dplyr is used to select water points whose main technology is hand pumps, and freq() of funModeling package to determine the distribution.
 
+![Example of Handpump](data2/bore-holes-ntic.jpg)
+
 ```{r}
 #| eval: false
 
@@ -276,6 +280,8 @@ freq(data = wpt_handpump,
 
 In the code chunks below, filter() of dplyr is used to select water points whose main technology is mechanised pumps, and freq() of funModeling package to determine the distribution.
 
+![Example of Mechanised Pump](data2/mechpump.jfif){width="1280"}
+
 ```{r}
 #| eval: false
 wpt_mechpump <- wp_nga %>%
@@ -294,6 +300,10 @@ freq(data = wpt_mechpump,
 ![](data2/screenshot%2010.jpg)
 
 In the code chunks below, filter() of dplyr is used to select water points whose main technology is rope and buckets, as well as the unknowns, and freq() of funModeling package to determine their distributions.
+
+![Example of Tapstand](data2/IMG_0187.jpg)
+
+![Example of Rope and Bucket](data2/LagosIsland-032021-Nigeria-NengiNelson-SL-06.jpg)
 
 ```{r}
 #| eval: false
@@ -538,6 +548,54 @@ ggarrange(wpf, pcf, wpnf, pcnf, pchp, pcmp, pcu1l, pcu1m, pcu,
 
 ## 3.2 EDA using a choropleth map
 
+To have a quick look at the distribution of functional and non-functional water points at township level, a choropleth map will be prepared.
+
+The code chunks below are used to prepare the choropleth map by using the *qtm()* function of **tmap** package.
+
+```{r}
+wpt.functional.map <- tm_shape(nga_wp) + 
+  tm_fill(col = "wpt functional",
+          n = 5,
+          style = "jenks", 
+          title = "Functional WP") + 
+  tm_borders(alpha = 0.5) 
+
+wpt.pct.map <- tm_shape(nga_wp) + 
+  tm_fill(col = "pct_functional",
+          n = 5,
+          style = "jenks",
+          title = "Percentage of Functional WP ") + 
+  tm_borders(alpha = 0.5) 
+
+tmap_arrange(wpt.functional.map, wpt.pct.map,
+             asp=NA, ncol=2)
+```
+
+Notice that the choropleth maps above clearly show that townships
+with relatively larger number of waterpoints are also showing relatively
+higher percentage of functional waterpoints.
+
+Now let us plot the choropleth maps showing the distribution of number of non-functional waterpoints and the percentage of non-functional waterpoints using the code chunk below.
+
+```{r}
+wpt.nfunctional.map <- tm_shape(nga_wp) + 
+  tm_fill(col = "wpt non-functional",
+          n = 5,
+          style = "jenks", 
+          title = "Non-Functional WP") + 
+  tm_borders(alpha = 0.5) 
+
+wpt.npct.map <- tm_shape(nga_wp) + 
+  tm_fill(col = "pct_non-functional",
+          n = 5,
+          style = "jenks",
+          title = "Percentage of Non-Functional WP ") + 
+  tm_borders(alpha = 0.5) 
+
+tmap_arrange(wpt.nfunctional.map, wpt.npct.map,
+             asp=NA, ncol=2)
+```
+
 # 4. Correlation Analysis
 
 Before we perform cluster analysis, it is important for us to ensure that the cluster variables are not highly correlated.
@@ -597,7 +655,7 @@ row.names(cluster_vars) <- cluster_vars$"HRname"
 head(cluster_vars, 10)
 ```
 
-From the output above, the row number has been replaced with townshop name.
+From the output above, the row number has been replaced with township name.
 
 Using the code chunk below, we will delete the "HRname' field.
 
@@ -642,8 +700,8 @@ Beside reviewing the summary statistics of the standardised clustering variables
 The code chunks below plot the scaled *wpt functional, wpt non-functional* fields. The remaining variables (e.g. pct_handpump) need not be plotted since their existing values already range from 0 to 1.
 
 ```{r}
-#| fig-width: 10
-#| fig-height: 20
+#| fig-width: 15
+#| fig-height: 10
 
 a <- ggplot(data=nga_wp_derived, 
              aes(x= `wpt functional`)) +
@@ -714,9 +772,9 @@ hclust_ward <- hclust(proxmat, method = 'ward.D')
 Using the code chunk below, we can then plot the tree using plot() of R Graphics.
 
 ```{r}
-#| fig-width: 5
+#| fig-width: 15
 #| fig-height: 10
-plot(hclust_ward, cex = 0.6)
+plot(hclust_ward, cex = 0.3)
 ```
 
 ## 5.6 Selecting the optimal clustering algorithm
@@ -782,7 +840,7 @@ The height of the fusion, provided on the vertical axis, indicates the (dis)simi
 It's also possible to draw the dendrogram with a border around the selected clusters by using [*rect.hclust()*](https://stat.ethz.ch/R-manual/R-devel/library/stats/html/rect.hclust.html) of R stats. The argument *border* is used to specify the border colors for the rectangles.
 
 ```{r}
-plot(hclust_ward, cex = 0.6)
+plot(hclust_ward, cex = 0.3)
 rect.hclust(hclust_ward, 
             k = 4, 
             border = 2:5)
@@ -882,8 +940,8 @@ summary(nga_wp.nb)
 We can plot the neighbours list on nga_wp_sp by using the code chunk below. Since we now can plot the community area boundaries as well, we plot this graph on top of the map. The first plot command gives the boundaries. This is followed by the plot of the neighbor list object, with coordinates applied to the original SpatialPolygonDataFrame (Nigeria state township boundaries) to extract the centroids of the polygons. These are used as the nodes for the graph representation. We also set the color to blue and specify add=TRUE to plot the network on top of the boundaries.
 
 ```{r}
-#| fig-width: 30
-#| fig-height: 30
+#| fig-width: 15
+#| fig-height: 10
 
 plot(nga_wp_sp, 
      border=grey(.5))
@@ -949,15 +1007,15 @@ head(nga_wp.mst)
 The plot method for the MST include a way to show the observation numbers of the nodes in addition to the edge. As before, we plot this together with the township boundaries. We can see how the initial neighbour list is simplified to just one edge connecting each of the nodes, while passing through all the nodes.
 
 ```{r}
-#| fig-width: 30
-#| fig-height: 30
+#| fig-width: 15
+#| fig-height: 10
 
 plot(nga_wp_sp, border=gray(.5))
 plot.mst(nga_wp.mst, 
          coordinates(nga_wp_sp), 
          col="blue", 
-         cex.lab=0.2, 
-         cex.circles=0.0005, 
+         cex.lab=0.5, 
+         cex.circles=0.005, 
          add=TRUE)
 ```
 
@@ -998,15 +1056,15 @@ table(ccs4)
 Lastly, we can also plot the pruned tree that shows the four clusters on top of the townshop area.
 
 ```{r}
-#| fig-width: 30
-#| fig-height: 30
+#| fig-width: 15
+#| fig-height: 10
 
 plot(nga_wp_sp, border=gray(.5))
 plot(clust4, 
      coordinates(nga_wp_sp), 
-     cex.lab=.2,
+     cex.lab=.5,
      groups.colors=c("red","green","blue", "pink"),
-     cex.circles=0.0005, 
+     cex.circles=0.005, 
      add=TRUE)
 ```
 
@@ -1024,6 +1082,9 @@ qtm(nga_wp_spatialcluster, "SP_CLUSTER")
 For easy comparison, it will be better to place both the hierarchical clustering and spatially constrained hierarchical clustering maps next to each other.
 
 ```{r}
+#| fig-width: 15
+#| fig-height: 10
+
 hclust.map <- qtm(nga_wp_cluster,
                   "CLUSTER") + 
   tm_borders(alpha = 0.5) 
@@ -1133,22 +1194,71 @@ ggarrange(w, y,
           nrow = 1)
 ```
 
-The boxplots reveal that Cluster X displays the highest mean wpt_functional, while Cluster Y displays the highest mean wpt_non-functional.
+The boxplots reveal that Cluster 4 displayed the highest mean for both wpt_functional and wpt_non-functional.
 
 ## 8.2 Multivariate visualisation
 
 Using the code chunks below, we will display parallel coordinate plots to reveal clustering variables by cluster. using [`ggparcoord()`](https://ggobi.github.io/ggally/reference/ggparcoord.html) of [**GGally**](https://ggobi.github.io/ggally/) package.
 
 ```{r}
-#| fig-width: 30
-#| fig-height: 20
+#| fig-width: 15
+#| fig-height: 10
 
 ggparcoord(data = nga_wp_ngeo_cluster, 
-           columns = c(14:15, 21:27), 
+           columns = c(21:27), 
            scale = "globalminmax",
-           alphaLines = 0.2,
+           alphaLines = 0.05,
            boxplot = TRUE, 
            title = "Multiple Parallel Coordinates Plots of Water Tech Variables by Cluster") +
   facet_grid(~ CLUSTER) + 
-  theme(axis.text.x = element_text(angle = 30))
+  theme(axis.text.x = element_text(angle = 45))
 ```
+
+The parallel coordinate plot above reveals that households in Cluster
+4 townships tend to have the highest percentage of functional waterpoints, mainly handpumps and rural areas.
+
+On the other hand, households in Cluster 1 tends to have the highest percentage of non-functional waterpoints, mainly mech pumps, and non-urban areas.
+
+Note that the `scale` argument of `ggparcoor()` provide several methods to scale the clustering variables. They are:
+
+-   std: univariately, subtract mean and divide by standard deviation.
+
+-   robust: univariately, subtract median and divide by median absolute deviation.
+
+-   uniminmax: univariately, scale so the minimum of the variable is zero, and the maximum is one.
+
+-   globalminmax: no scaling is done; the range of the graphs is defined by the global minimum and the global maximum.
+
+-   center: use uniminmax to standardize vertical height, then center each variable at a value specified by the scaleSummary param.
+
+-   centerObs: use uniminmax to standardize vertical height, then center each variable at the value of the observation specified by the
+    centerObsID param
+
+Last but not least, we can also compute the summary statistics such as mean, median, sd, etc to complement the visual interpretation. Using the code chunk below, `group_by()` and `summarise()` of dplyr are used to derive mean values of the clustering variables.
+
+```{r}
+nga_wp_ngeo_cluster %>% 
+  st_set_geometry(NULL) %>%
+  group_by(CLUSTER) %>%
+  summarise(mean_wpt_functional = mean(wpt.functional),
+            mean_wpt_nonfunctional = mean(wpt.non.functional),
+            mean_pct_functional = mean(pct_functional),
+            mean_pct_nonfunctional = mean(pct_non.functional),
+            mean_pct_handpump = mean(pct_handpump),
+            mean_pct_mechpump = mean(pct_mechpump),
+            mean_pct_usage1000more = mean(pct_usage1000more),
+            mean_pct_usage1000less = mean(pct_usage1000less),
+            mean_pct_rural = mean(pct_rural))
+```
+
+# 9. Acknowledgements
+
+Sincere appreciation to Prof. Kam Tin Seong for all the lecture notes,hands-on exercises and in-class assignments. Heavy references were made from data wrangling, mapping and clustering!
+
+## 9.1 Resources used
+
+[ONG ZHI RONG JORDAN](https://jordan-isss624-geospatial.netlify.app/posts/geo/geospatial_exercise/), Geospatial Analytics for Social Good - Understanding Nigeria Water functional and non-functional water point rate
+
+***Photo Credits***:
+
+-   Nengi Nelson, \"Waterpreneurs\" cash in on government failure to deliver clean water to islanders
