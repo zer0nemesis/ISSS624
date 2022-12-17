@@ -1,5 +1,5 @@
 ---
-title: "Hands On Ex1A"
+title: "Hands On Ex1A: Geospatial Data Wrangling with R"
 author: "Roger Chen"
 editor: visual
 ---

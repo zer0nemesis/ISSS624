@@ -1,5 +1,5 @@
 ---
-title: "Hands On Ex1B"
+title: "Hands On Ex1B: Choropleth Mapping with R"
 author: "Roger Chen"
 editor: visual
 ---

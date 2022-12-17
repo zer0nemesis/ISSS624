@@ -1,5 +1,5 @@
 ---
-title: "Hands-On_Ex3"
+title: "Hands-On_Ex3: Spatial Weights and Applications"
 author: "Roger"
 editor: visual
 ---
@@ -918,9 +918,7 @@ Note that the `scale` argument of `ggparcoor()` provide several methods to scale
 
 -   center: use uniminmax to standardize vertical height, then center each variable at a value specified by the scaleSummary param.
 
--   centerObs: use uniminmax to standardize vertical height, then center
-    each variable at the value of the observation specified by the
-    centerObsID param
+-   centerObs: use uniminmax to standardize vertical height, then center each variable at the value of the observation specified by the centerObsID param
 
 There is no one best scaling method to use. We should explore them and select the one that best meet our analysis need.
 
