@@ -54,6 +54,26 @@ To build an explanatory model to discover factors affecting water point status i
 
 In the code chunk below, we will install and launch these R packages into R environment.
 
+-   Spatial data handling
+
+    -   **sf** and **spdep**
+
+-   Attribute data handling
+
+    -   **tidyverse**, especially **readr**, **ggplot2** and **dplyr**
+
+-   Choropleth mapping
+
+    -   **tmap**
+
+-   Exploratory data analysis, data preparation and model performance
+
+    -   funModeling
+
+-   Multivariate data visualisation and analysis
+
+    -   **coorplot**, **ggpubr**, GWmodel, skimr and caret
+
 ```{r}
 pacman::p_load(sf, tidyverse, funModeling, blorr, corrplot, ggpubr, spdep, GWmodel, tmap, skimr, caret)
 ```
@@ -75,7 +95,7 @@ Osun_wp_sf <- read_rds("rds/Osun_wp_sf.rds")
 
 # 3. Exploratory Data Analysis
 
-Using the code chunk below, we will examine the proportion of functional and non-functional water points, represented by "True" and "False" respectively.
+Using the code chunks below, we will examine the proportion of functional and non-functional water points, represented by "True" and "False" respectively. We will then visualise the distribution by plotting a standard choropleth map using *tm_shape()* followed by *tm_polygons()*.
 
 ```{r}
 Osun_wp_sf %>%
@@ -92,12 +112,14 @@ tm_shape(Osun)+
   tm_view(set.zoom.limits = c(9,12))
 ```
 
-Using the code chunk below, we will generate the summary statistics will skimr() of Base R.
+Using the code chunk below, we will generate the summary statistics with skimr() of Base R.
 
 ```{r}
 Osun_wp_sf %>%
   skim()
 ```
+
+From the output above, we can observe that there are missing values, such as install_year (1,144 missing values). Using the code chunk below, we will next clean up the data by including only the pre-determined variables mentioned in Section 1.
 
 ```{r}
 Osun_wp_sf_clean <- Osun_wp_sf %>%
@@ -115,11 +137,11 @@ Osun_wp_sf_clean <- Osun_wp_sf %>%
   mutate(usage_capacity = as.factor(usage_capacity))
 ```
 
-Things to learn from the code chunk above,
-
 # 4. Correlation Analysis
 
-In the code chunks below,
+Before we perform cluster analysis, it is important for us to ensure that the cluster variables are not highly correlated.
+
+In the code chunks below, we will use [*corrplot.mixed()*](https://cran.r-project.org/web/packages/corrplot/corrplot.pdf) function of [**corrplot**](https://cran.r-project.org/web/packages/corrplot/vignettes/corrplot-intro.html) package to visualise and analyse the correlation of the input variables.
 
 ```{r}
 Osun_wp <- Osun_wp_sf_clean %>%
@@ -140,7 +162,7 @@ corrplot.mixed(cluster_vars.cor,
 
 From the output above, as there is no correlation factor \>0.8, it is safe to assume there is no evidence of multi-colinearity between the continuous variables.
 
-Using the code chunk below,
+Instead of using a typical R report, we will generate a report using blr() of blorr package using the code chunks below.
 
 ```{r}
 model <- glm(status ~ distance_to_primary_road +
@@ -157,13 +179,11 @@ model <- glm(status ~ distance_to_primary_road +
              family = binomial(link = "logit"))
 ```
 
-Instead of using a typical R report, we will generate a report using blr() of blorr package using the code chunk below.
-
 ```{r}
 blr_regress(model)
 ```
 
-From the report above, we can exclude the distance_to_primary_road and distance_to_secondary_road as there are not statistically significant at their p-value is \> 0.05.
+From the report above, we can exclude the distance_to_primary_road and distance_to_secondary_road as they are not statistically significant as their p-values are both \> 0.05.
 
 # 5. Building a Logistic Regression Model
 
@@ -175,6 +195,8 @@ The validity of a cut-off is measured using sensitivity, specificity, and accura
 
 -   Accuracy : The % of correctly classified observations over all observations (TP + TN)/ (TP + FP + TN + FN)
 
+Using the code chunk below, we will use the confusion matrix to determine the validity.
+
 ```{r}
 blr_confusion_matrix(model, cutoff = 0.5)
 ```
@@ -185,7 +207,7 @@ From the output above, we can see that the model can pick up the true positive (
 
 ## 6.1 Converting from sf to sp data frame
 
-Using the code chunk below,
+Using the code chunk below, we will [*as_Spatial()*](https://r-spatial.github.io/sf/reference/coerce-methods.html) of **sf** package to convert *osun_wp_sf_clean* into a SpatialPolygonDataFrame called *Osun_wp_sp*.
 
 ```{r}
 Osun_wp_sp <- Osun_wp_sf_clean %>%
@@ -207,7 +229,7 @@ Osun_wp_sp
 
 ### 6.2.1 Computing fixed bandwidth
 
-Calulating the distance matrix
+Using the code chunks below, we will compute the fixed bandwidth using bw.ggwr() of GWmodel.
 
 ```{r}
 bw.fixed <- bw.ggwr(status ~
@@ -260,7 +282,7 @@ From the output above, as AIC reduced from 5708.9(non-geographical weighted regr
 
 ### 6.3.1 Converting SDF into sf data frame
 
-To assess the performance of the gwLR, first, we will covert the SDF object in as data frame using the code chunk below.
+To assess the performance of the gwLR, first, we will covert the SDF object in as.data.frame using the code chunk below.
 
 ```{r}
 gwr.fixed <- as.data.frame(gwlr.fixed$SDF)
@@ -286,6 +308,8 @@ From the output above, we can see improvement the accuracy (from 67.4% to 88.5%)
 
 ## 6.4 Visualising gwLR
 
+Using the code chunks below, we will prepare the data for visualisation, by first selecting the ADM1, ADM2 fields and their status, before using *cbind()* to append gwr.fixed onto Osun_wp_sf_selected to produce an output simple feature object called `gwr_sf.fixed.`
+
 ```{r}
 Osun_wp_sf_selected <- Osun_wp_sf_clean %>%
   select(c(ADM2_EN, ADM2_PCODE,
@@ -299,7 +323,7 @@ gwr_sf.fixed <- cbind(Osun_wp_sf_selected, gwr.fixed)
 
 ### 6.4.1 Visualising coefficient estimator
 
-The code chunks below is used to create an interactive point symbol map.
+The code chunks below are used to create an interactive point symbol map.
 
 ```{r}
 tmap_mode("view")
